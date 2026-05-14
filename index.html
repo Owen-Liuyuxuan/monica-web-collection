@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monica Web Summaries — AI Research Concept Library</title>
+    <style>
+        :root {
+            --bg: #f5f5f0;
+            --text: #2c2c2c;
+            --muted: #6b6b6b;
+            --card-bg: #ffffff;
+            --border: #e0e0d8;
+            --accent-1: #2563eb;
+            --accent-2: #7c3aed;
+            --accent-3: #059669;
+            --accent-4: #d97706;
+            --code-bg: #f0f0ea;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .header {
+            padding: 48px 28px 40px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            background: var(--card-bg);
+        }
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #111;
+            margin-bottom: 10px;
+        }
+        .header .subtitle {
+            font-size: 0.95rem;
+            color: var(--muted);
+            max-width: 560px;
+            margin: 0 auto;
+        }
+        .header .dir-hint {
+            margin-top: 18px;
+            font-family: 'SF Mono', 'Consolas', monospace;
+            font-size: 0.78rem;
+            color: var(--muted);
+            background: var(--code-bg);
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 4px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 28px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            gap: 20px;
+        }
+        @media (max-width: 500px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 26px 28px;
+            transition: box-shadow 0.2s, transform 0.15s;
+            display: block;
+            text-decoration: none;
+            color: var(--text);
+            position: relative;
+        }
+        .card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .card .tag {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 3px 10px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+        .card:nth-child(1) .tag { background: #dbeafe; color: var(--accent-1); }
+        .card:nth-child(2) .tag { background: #ede9fe; color: var(--accent-2); }
+        .card:nth-child(3) .tag { background: #d1fae5; color: var(--accent-3); }
+        .card:nth-child(4) .tag { background: #fef3c7; color: var(--accent-4); }
+        .card h2 {
+            font-size: 1.18rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.01em;
+        }
+        .card .desc {
+            font-size: 0.88rem;
+            color: var(--muted);
+            line-height: 1.55;
+            margin-bottom: 14px;
+        }
+        .card .meta {
+            font-size: 0.75rem;
+            color: #999;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+        }
+        .card .meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .card .arrow {
+            position: absolute;
+            top: 26px;
+            right: 28px;
+            color: #ccc;
+            font-size: 1.1rem;
+            transition: color 0.2s;
+        }
+        .card:hover .arrow { color: var(--muted); }
+        .footer {
+            text-align: center;
+            padding: 28px;
+            font-size: 0.78rem;
+            color: #aaa;
+            border-top: 1px solid var(--border);
+        }
+        .add-guide {
+            background: var(--card-bg);
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            padding: 22px 28px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+        .add-guide code {
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.82rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Monica Web Summaries</h1>
+        <p class="subtitle">A curated library of interactive concept explainers covering AI reasoning, autonomous driving safety, and related research topics.</p>
+        <div class="dir-hint">root / &nbsp;&#9654;&nbsp; {concept}/index.html</div>
+    </div>
+
+    <div class="container">
+        <div class="grid">
+
+            <!-- === ALPAMAYOR1 === -->
+            <a href="alpamayor1/" class="card">
+                <span class="tag">Foundation Model</span>
+                <span class="arrow">&#8599;</span>
+                <h2>Alpamayo-R1: Bridging Reasoning &amp; Action</h2>
+                <p class="desc">
+                    Deep dive into NVIDIA's Vision-Language-Action model that treats reasoning as a causal prerequisite for control.
+                    Covers Chain of Causation, Flow Matching, and multi-stage RL training for autonomous driving.
+                </p>
+                <div class="meta">
+                    <span>&#128214; arXiv:2511.00088</span>
+                    <span>&#127968; NVIDIA</span>
+                    <span>&#9881; Diagrams + Mermaid</span>
+                </div>
+            </a>
+
+            <!-- === COLLISION CHECK === -->
+            <a href="collision_check/" class="card">
+                <span class="tag">Safety Metrics</span>
+                <span class="arrow">&#8599;</span>
+                <h2>Collision Risk Metrics: DRAC, PET, TTC, RSS</h2>
+                <p class="desc">
+                    Interactive guide with calculators and road diagrams. Compare four fundamental collision risk metrics: deceleration feasibility, temporal gaps, time-to-collision urgency, and formal safety distances.
+                </p>
+                <div class="meta">
+                    <span>&#128225; DRAC · PET · TTC · RSS</span>
+                    <span>&#128290; Interactive calculators</span>
+                </div>
+            </a>
+
+            <!-- === DEEPSEEK R1 === -->
+            <a href="deepseekr1/" class="card">
+                <span class="tag">LLM Reasoning</span>
+                <span class="arrow">&#8599;</span>
+                <h2>DeepSeek-R1: RL-Incentivized Reasoning</h2>
+                <p class="desc">
+                    Technical deep dive into how pure reinforcement learning (GRPO) without supervised fine-tuning can incentivize sophisticated reasoning capabilities in LLMs. Covers the "Aha moment", distillation superiority, and multi-stage training.
+                </p>
+                <div class="meta">
+                    <span>&#128214; arXiv:2501.12948</span>
+                    <span>&#127968; DeepSeek-AI</span>
+                    <span>&#128302; SOTA ideas + Training pipeline</span>
+                </div>
+            </a>
+
+            <!-- === REFLECTDRIVE === -->
+            <a href="reflectdrive/" class="card">
+                <span class="tag">Autonomous Driving</span>
+                <span class="arrow">&#8599;</span>
+                <h2>ReflectDrive Series: Safety to Self-Correction</h2>
+                <p class="desc">
+                    Comparative analysis tracing the evolution from safety-as-oracle (v1) to reward-coupled self-correction (v2). Covers discrete diffusion, AutoEdit, RL over composed rollout, and deployment co-design.
+                </p>
+                <div class="meta">
+                    <span>&#128214; arXiv:2509.20109, 2605.04647</span>
+                    <span>&#127968; LiAuto / Tsinghua</span>
+                </div>
+            </a>
+
+        </div>
+
+        <div class="add-guide" style="margin-top: 24px;">
+            <strong>Adding a new concept?</strong> Create a folder <code>your-topic/</code> with an <code>index.html</code> inside — this index auto-lists folders. See <code>AGENT.md</code> for details.
+        </div>
+    </div>
+
+    <div class="footer">
+        Generated by Monica · Static concept library for research communication
+    </div>
+
+</body>
+</html>
