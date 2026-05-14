@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ReflectDrive Series: Comparative Analysis</title>
+<style>
+:root{--p:#1a237e;--s:#283593;--a:#3949ab;--a2:#5c6bc0;--h:#e8eaf6;--h2:#c5cae9;--tx:#1a1a2e;--bg:#f8f9fc;--ca:#fff;--bo:#dde1f0;--gll:#e8f5e9;--rll:#ffebee;--oll:#fff3e0;--tll:#e0f2f1}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Georgia,serif;background:var(--bg);color:var(--tx);line-height:1.78;font-size:15px}
+.cover{background:linear-gradient(135deg,#0d1b6e,#1a237e 40%,#283593 70%,#3949ab);color:#fff;padding:65px 55px 55px;position:relative;overflow:hidden}
+.cover::before{content:"";position:absolute;top:-80px;right:-80px;width:400px;height:400px;border-radius:50%;background:rgba(255,255,255,.04)}
+.clabel{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9fa8da;margin-bottom:16px;font-family:Arial,sans-serif}
+.cover h1{font-size:2.15em;font-weight:700;line-height:1.25;margin-bottom:16px}
+.cover h1 span{color:#7986cb}
+.sub{font-size:.97em;color:#c5cae9;margin-bottom:26px;font-style:italic;max-width:700px}
+.cmeta{display:flex;gap:22px;flex-wrap:wrap;font-family:Arial,sans-serif;font-size:12px;color:#9fa8da}
+.cmeta strong{color:#e8eaf6}
+.container{max-width:1080px;margin:0 auto;padding:0 28px}
+.toc{background:var(--ca);border:1px solid var(--bo);border-left:5px solid var(--a);padding:24px 28px;margin:32px 0;border-radius:6px}
+.toc h2{font-size:.9em;text-transform:uppercase;letter-spacing:2px;color:var(--a);margin-bottom:12px;font-family:Arial,sans-serif}
+.toc ol{padding-left:20px}.toc li{margin:5px 0}
+.toc a{color:var(--a);text-decoration:none;font-family:Arial,sans-serif;font-size:13px}
+.toc a:hover{text-decoration:underline}
+.sec{background:var(--ca);border:1px solid var(--bo);border-radius:8px;padding:36px 40px;margin:24px 0;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.sh{display:flex;align-items:center;gap:13px;border-bottom:2px solid var(--h2);padding-bottom:13px;margin-bottom:24px}
+.sn{background:var(--p);color:#fff;width:35px;height:35px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-family:Arial,sans-serif;flex-shrink:0}
+.sec h2{font-size:1.25em;color:var(--p);font-weight:700}
+h3{font-size:1.03em;color:var(--s);margin:22px 0 9px;border-left:4px solid var(--a2);padding-left:10px}
+h4{font-size:.93em;color:var(--a);margin:15px 0 7px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:.5px}
+p{margin:9px 0}
+.cb{border-radius:6px;padding:14px 17px;margin:15px 0;border-left:5px solid}
+.cb-bl{background:#e8eaf6;border-color:#3949ab}.cb-gn{background:var(--gll);border-color:#388e3c}
+.cb-rd{background:var(--rll);border-color:#e53935}.cb-or{background:var(--oll);border-color:#fb8c00}.cb-tl{background:var(--tll);border-color:#00897b}
+.cbt{font-weight:700;font-family:Arial,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.cb-bl .cbt{color:#1a237e}.cb-gn .cbt{color:#1b5e20}.cb-rd .cbt{color:#b71c1c}.cb-or .cbt{color:#e65100}.cb-tl .cbt{color:#004d40}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.cc{border-radius:8px;padding:18px 20px;border:1px solid}
+.cc.v1{background:#fafbff;border-color:#7986cb;border-top:4px solid #5c6bc0}
+.cc.v2{background:#f0faf4;border-color:#66bb6a;border-top:4px solid #388e3c}
+.cc h4{font-size:.93em;margin-top:0;margin-bottom:9px}.cc.v1 h4{color:#283593}.cc.v2 h4{color:#1b5e20}
+.cc ul{padding-left:16px}.cc li{margin:5px 0;font-size:13px}
+.tw{overflow-x:auto;margin:16px 0}
+table{width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px}
+thead tr{background:var(--p);color:#fff}
+thead th{padding:10px 12px;text-align:left;font-weight:600}
+tbody tr:nth-child(even){background:var(--h)}
+tbody tr:hover{background:var(--h2)}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--bo);vertical-align:top}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;font-family:Arial,sans-serif}
+.tg{background:#c8e6c9;color:#1b5e20}.tr{background:#ffcdd2;color:#b71c1c}.tb{background:#c5cae9;color:#1a237e}.to{background:#ffe0b2;color:#e65100}
+.eq{background:#f5f5f5;border:1px solid #ddd;border-radius:6px;padding:12px 16px;margin:12px 0;font-family:"Courier New",monospace;font-size:12px;overflow-x:auto;color:#1a237e;line-height:1.65}
+.pl{display:flex;align-items:center;flex-wrap:wrap;gap:0;margin:16px 0}
+.ps{background:var(--a);color:#fff;padding:8px 13px;border-radius:6px;font-family:Arial,sans-serif;font-size:11.5px;font-weight:600;text-align:center;min-width:95px}
+.ps.alt{background:#388e3c}.ps.gr{background:#607d8b}
+.pa{color:#546e7a;font-size:18px;padding:0 4px;font-weight:700}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin:13px 0}
+.pros,.cons{border-radius:6px;padding:14px 16px}
+.pros{background:var(--gll);border:1px solid #a5d6a7}.cons{background:var(--rll);border:1px solid #ef9a9a}
+.pros h5,.cons h5{font-family:Arial,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.pros h5{color:#1b5e20}.cons h5{color:#b71c1c}
+.pros ul,.cons ul{padding-left:14px}.pros li,.cons li{margin:5px 0;font-size:12.5px}
+.tl{position:relative;padding-left:24px;margin:16px 0}
+.tl::before{content:"";position:absolute;left:6px;top:0;bottom:0;width:2px;background:var(--a2)}
+.ti{position:relative;margin-bottom:18px}
+.tdot{position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--a);border:2px solid #fff;box-shadow:0 0 0 2px var(--a)}
+.tdot.v2{background:#388e3c;box-shadow:0 0 0 2px #388e3c}
+.tt{font-weight:700;font-family:Arial,sans-serif;font-size:13px;color:var(--p);margin-bottom:3px}
+.tb2{font-size:13px;color:var(--tx)}
+.footer{background:var(--p);color:#9fa8da;text-align:center;padding:20px;font-family:Arial,sans-serif;font-size:12px;margin-top:36px}
+@media(max-width:700px){.cg,.pc{grid-template-columns:1fr}.cover{padding:36px 20px}.sec{padding:20px 16px}}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="clabel">Academic Comparative Analysis Report</div>
+  <h1>From Safety Reflection to <span>Reward-Coupled Self-Correction</span>:<br>The Evolution of the ReflectDrive Series</h1>
+  <p class="sub">A philosophical, methodological, and empirical comparative study of ReflectDrive (arXiv:2509.20109) and ReflectDrive-2 (arXiv:2605.04647) for autonomous driving planning via discrete diffusion.</p>
+  <div class="cmeta">
+    <span>&#128196; <strong>Papers:</strong> ReflectDrive v1 &amp; v2</span>
+    <span>&#127968; <strong>Affiliation:</strong> LiAuto / Tsinghua University</span>
+    <span>&#127919; <strong>Benchmark:</strong> NAVSIM (PDMS)</span>
+    <span>&#128197; <strong>Dates:</strong> Sep 2025 &#8594; May 2026</span>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="toc"><h2>Table of Contents</h2><ol>
+  <li><a href="#s1">Core Philosophy &amp; Motivation</a></li>
+  <li><a href="#s2">Problem-Solving Methodology: Step-by-Step</a></li>
+  <li><a href="#s3">Mathematical Foundations &amp; Formalism</a></li>
+  <li><a href="#s4">Methodological Pros &amp; Cons Analysis</a></li>
+  <li><a href="#s5">Philosophical Gains &amp; Losses Between Models</a></li>
+  <li><a href="#s6">Developmental Trajectory &amp; Comparative Overview</a></li>
+  <li><a href="#s7">Empirical Performance Analysis</a></li>
+  <li><a href="#s8">Synthesis &amp; Concluding Remarks</a></li>
+</ol></div>
+
+<!-- ══════════════════════════════════════════════ SECTION 1 -->
+<div class="sec" id="s1">
+  <div class="sh"><div class="sn">1</div><h2>Core Philosophy &amp; Motivation</h2></div>
+  <p>Both papers share a foundational premise: <em>imitation learning alone is insufficient for safe, deployable autonomous driving</em>. The divergence lies in <em>how</em> each paper diagnoses the root failure and what philosophical stance it adopts to address it.</p>
+
+  <h3>1.1 ReflectDrive-1: Safety as an External Oracle</h3>
+  <div class="cb cb-bl">
+    <div class="cbt">Core Thesis</div>
+    Discrete diffusion's native inpainting capability can be harnessed as a <strong>gradient-free, inference-time safety enforcement mechanism</strong>. Safety is treated as an external constraint to be <em>imposed</em> on a trained generative model, not a property to be <em>learned</em> through reward.
+  </div>
+  <p>The central motivation of ReflectDrive-1 is to bridge the gap between the generative flexibility of diffusion-based planners and the hard safety requirements of real-world driving. The authors observe that:</p>
+  <ul style="padding-left:22px;margin:10px 0">
+    <li style="margin:6px 0"><strong>Behavior cloning</strong> cannot inherently encode inviolable physical rules (collision avoidance, drivable-area compliance).</li>
+    <li style="margin:6px 0"><strong>Reinforcement learning</strong> is powerful but requires unsafe online rollouts, suffers from sim-to-real gaps, and is unstable at scale.</li>
+    <li style="margin:6px 0"><strong>Continuous diffusion guidance</strong> requires expensive per-step gradient computations and is numerically sensitive.</li>
+  </ul>
+  <p>The philosophical answer is elegant: <em>discrete tokens enable search</em>. Unlike continuous diffusion, a discrete BEV token space admits efficient local search over candidate corrections without any gradient. The model's inpainting capability then propagates a locally-corrected "safety anchor" into a globally coherent trajectory. Safety is thus a <strong>post-hoc, rule-based oracle</strong> layered on top of a learned prior.</p>
+
+  <h3>1.2 ReflectDrive-2: Self-Correction as a Learned, Reward-Coupled Policy</h3>
+  <div class="cb cb-tl">
+    <div class="cbt">Core Thesis</div>
+    Self-correction in driving planning requires more than a trained editor. The drafter and editor must be <strong>co-adapted under a shared closed-loop reward</strong> through reinforcement learning over the <em>full composed rollout</em>.
+  </div>
+  <p>ReflectDrive-2 begins from a different diagnosis. The authors observe that simply adding a self-editing step on top of a trained drafter yields negligible benefit (+0.3 PDMS). The fundamental problem is a <strong>coupling failure</strong>: under supervised training, the drafter optimizes its own token-level loss and the editor optimizes a separate correction loss. Neither stage is aware of the other's effect on the final driving outcome.</p>
+  <p>The philosophical shift is profound: self-correction is not a post-hoc add-on but <strong>a component of the optimized policy rollout</strong>. The system must learn <em>to draft in a way that is revisable</em>, and <em>to edit in a way that is reward-seeking</em>. This requires RL over the complete draft&#8594;AutoEdit trajectory, assigning a single terminal reward to the post-edit outcome and propagating credit through both phases.</p>
+
+  <div class="cg">
+    <div class="cc v1">
+      <h4>ReflectDrive-1 Philosophy</h4>
+      <ul>
+        <li>Safety = external constraint enforcement</li>
+        <li>Correction = inference-time search + inpainting</li>
+        <li>Model is a generative prior; safety is a filter</li>
+        <li>Gradient-free by design</li>
+        <li>Reflection = iterative rule-checking loop</li>
+        <li>Scalability via inference compute</li>
+      </ul>
+    </div>
+    <div class="cc v2">
+      <h4>ReflectDrive-2 Philosophy</h4>
+      <ul>
+        <li>Safety = emergent property of reward alignment</li>
+        <li>Correction = trained, reward-coupled operator</li>
+        <li>Model learns <em>how to be correctable</em></li>
+        <li>RL couples drafting and editing</li>
+        <li>Reflection = part of the optimized policy</li>
+        <li>Scalability via model capacity + RL signal</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ SECTION 2 -->
+<div class="sec" id="s2">
+  <div class="sh"><div class="sn">2</div><h2>Problem-Solving Methodology: Step-by-Step</h2></div>
+
+  <h3>2.1 ReflectDrive-1: The Reflective Inference Pipeline</h3>
+  <div class="tl">
+    <div class="ti">
+      <div class="tdot"></div>
+      <div class="tt">Step 1 &mdash; Trajectory Discretization</div>
+      <div class="tb2">Continuous 2D waypoints (x,y) are quantized into a uniform 1D codebook A = {a&#8321;, a&#8322;, &hellip;} over spatial range [&minus;M, M] with resolution &Delta;g. Each waypoint becomes a discrete token pair (y<sub>j,x</sub>, y<sub>j,y</sub>), and the full 8-waypoint trajectory becomes a length-16 token sequence. This foundational design choice enables all subsequent search and inpainting operations.</div>
+    </div>
+    <div class="ti">
+      <div class="tdot"></div>
+      <div class="tt">Step 2 &mdash; Base Model: Discrete Diffusion VLA (SFT)</div>
+      <div class="tb2">A pre-trained Diffusion Language Model (LLaDA-V) is fine-tuned on NAVSIM driving data. The model learns to denoise masked trajectory tokens conditioned on multi-view images, language navigation instructions, and ego-state. Classifier-free guidance is used at inference. This provides the inpainting capability central to reflection.</div>
+    </div>
+    <div class="ti">
+      <div class="tdot"></div>
+      <div class="tt">Step 3 &mdash; Goal-Conditioned Generation (Multi-Modal Proposals)</div>
+      <div class="tb2">The model predicts a probability distribution over terminal waypoint tokens. Top-K candidates are sampled and spatially de-duplicated via Non-Maximum Suppression (NMS) in BEV space (K=3, threshold=0.9m). Each surviving goal point G<sub>k</sub> anchors a separate full trajectory generation, producing K diverse behavioral hypotheses (lane-keep, yield, overtake, etc.).</div>
+    </div>
+    <div class="ti">
+      <div class="tdot"></div>
+      <div class="tt">Step 4 &mdash; Safety Evaluation via Scoring Functions</div>
+      <div class="tb2">Each generated trajectory is scored by three functions: <strong>S<sub>global</sub></strong> (overall quality; zero if any hard rule violated), <strong>S<sub>safe</sub></strong> (per-waypoint safety oracle identifying first violation), and <strong>S<sub>local</sub></strong> (evaluates candidate token pairs for local correction). The best-scoring trajectory is selected for potential refinement.</div>
+    </div>
+    <div class="ti">
+      <div class="tdot"></div>
+      <div class="tt">Step 5 &mdash; Safety-Guided Regeneration (Iterative Loop)</div>
+      <div class="tb2">For the first unsafe waypoint t*, a local search over a Manhattan neighborhood N<sub>&delta;</sub>(y<sub>t*</sub>) finds the token pair maximizing S<sub>local</sub>. This corrected token is fixed as a <strong>safety anchor</strong>. The diffusion model then performs a single-pass inpainting conditioned on the anchor, re-establishing global coherence. The loop repeats until the trajectory is safe or a budget is exhausted (typically 1&ndash;3 iterations in practice).</div>
+    </div>
+  </div>
+  <div class="pl">
+    <div class="ps">Scene Encoding</div><div class="pa">&#8594;</div>
+    <div class="ps">Goal Sampling (NMS)</div><div class="pa">&#8594;</div>
+    <div class="ps">Parallel Diffusion</div><div class="pa">&#8594;</div>
+    <div class="ps">Safety Scoring</div><div class="pa">&#8594;</div>
+    <div class="ps alt">Local Search + Anchor</div><div class="pa">&#8594;</div>
+    <div class="ps alt">Inpainting</div><div class="pa">&#8594;</div>
+    <div class="ps gr">Loop / Output</div>
+  </div>
+
+  <h3>2.2 ReflectDrive-2: The Decision&ndash;Draft&ndash;Reflect Pipeline</h3>
+  <div class="tl">
+    <div class="ti">
+      <div class="tdot v2"></div>
+      <div class="tt">Step 1 &mdash; Multimodal Context Encoding</div>
+      <div class="tb2">Two temporal frames from left-front, front, and right-front cameras are encoded by a ViT backbone and projected into the diffusion Transformer's token space. Visual tokens are concatenated with route-instruction tokens &ell;<sub>t</sub> and ego-state tokens s<sub>t</sub>. A shared backbone processes all token types, with a Full FFN over prompt tokens and a compact <strong>Action FFN</strong> (4096&#8594;1024 hidden dim) over trajectory tokens. Causal attention over the prompt enables KV cache reuse.</div>
+    </div>
+    <div class="ti">
+      <div class="tdot v2"></div>
+      <div class="tt">Step 2 &mdash; Goal-Point Posterior (Decision Phase)</div>
+      <div class="tb2">A goal head predicts a posterior distribution over discrete BEV coordinates. Top-K sampling with NMS produces spatially distinct behavioral hypotheses. Each goal token is committed and conditions a separate drafting branch. Crucially, the goal represents a <em>behavior-level hypothesis</em> (lane-keep vs. yield vs. overtake), not merely a spatial endpoint. During training, the goal head is supervised by the expert endpoint.</div>
+    </div>
+    <div class="ti">
+      <div class="tdot v2"></div>
+      <div class="tt">Step 3 &mdash; Masked Trajectory Drafting (Draft Phase)</div>
+      <div class="tb2">The 8-waypoint trajectory is represented as 16 discrete coordinate tokens x<sub>0</sub> = [x<sub>1</sub>,y<sub>1</sub>,&hellip;,x<sub>8</sub>,y<sub>8</sub>]. Goal tokens are fixed; remaining tokens are initialized as [MASK] and filled via parallel denoising over a small number of rounds (3&ndash;5 optimal). The <strong>all-position supervised objective</strong> (vs. masked-only in LLaDA) yields more stable optimization. At each round, most-confident predictions are committed.</div>
+    </div>
+    <div class="ti">
+      <div class="tdot v2"></div>
+      <div class="tt">Step 4 &mdash; AutoEdit Trajectory Correction (Reflect Phase)</div>
+      <div class="tb2">AutoEdit performs <strong>direct token-to-token rewriting</strong> (not re-masking). It is pretrained with structure-aware perturbations (SAP) targeting the two dominant failure axes of imitation-learned driving: (1) <em>Longitudinal progress errors</em>: arc-length rescaling with &beta; ~ U(&beta;<sub>min</sub>, &beta;<sub>max</sub>); (2) <em>Lateral heading deviations</em>: rotation R(&alpha;) with &alpha; ~ U(&minus;&alpha;<sub>max</sub>, &alpha;<sub>max</sub>). The model maps perturbed token sequences directly to clean token sequences.</div>
+    </div>
+    <div class="ti">
+      <div class="tdot v2"></div>
+      <div class="tt">Step 5 &mdash; Drivable-Area Field Loss (Constraint Regularization)</div>
+      <div class="tb2">A field-based spatial penalty L<sub>field</sub> penalizes probability mass assigned to high-cost BEV cells. The DAC cost field C<sub>DAC</sub>[i,j] = max(0, d<sub>out</sub>[i,j] &minus; &epsilon;<sub>safe</sub>) is derived from the distance transform of the drivable-area boundary. A logarithmic barrier &minus;log(1 &minus; p<sub>xy</sub>[i,j]) &middot; C[i,j] gives larger gradients when the model assigns high confidence to non-drivable regions.</div>
+    </div>
+    <div class="ti">
+      <div class="tdot v2"></div>
+      <div class="tt">Step 6 &mdash; RL Fine-Tuning over Composed Rollout</div>
+      <div class="tb2">The critical step. G = N<sub>g</sub> &times; I candidate rollouts are sampled (3 goals &times; 2 drafts = 6 total). Token-transition sequences from <em>both</em> the drafting and AutoEdit phases form the MDP trajectory. The terminal PDMS reward is assigned to the post-edit trajectory. Group-relative advantage (GRPO-style) normalizes rewards across the group. Policy-gradient credit flows through both phases, coupling drafter and editor under a single objective.</div>
+    </div>
+    <div class="ti">
+      <div class="tdot v2"></div>
+      <div class="tt">Step 7 &mdash; Efficient Reflective Decoding Stack</div>
+      <div class="tb2">Four co-designed optimizations: (1) <strong>Shared-prefix KV reuse</strong> (3.5&times; speedup on attention); (2) <strong>Alternating Step Decode (ASD)</strong> &mdash; full-step frames run the complete pipeline, lite-step frames apply AutoEdit to the temporally-transformed previous plan (3.4&times; speedup); (3) <strong>Action-expert FFN</strong> 4096&#8594;1024 (2.6&times; speedup); (4) <strong>Fused CUDA unmasking kernel</strong> (7.5&times; speedup). Combined: 45.0 ms &#8594; 31.8 ms average latency on NVIDIA Thor.</div>
+    </div>
+  </div>
+  <div class="pl">
+    <div class="ps">Context Encoding</div><div class="pa">&#8594;</div>
+    <div class="ps">Goal Posterior</div><div class="pa">&#8594;</div>
+    <div class="ps">Masked Drafting</div><div class="pa">&#8594;</div>
+    <div class="ps alt">AutoEdit (Reflect)</div><div class="pa">&#8594;</div>
+    <div class="ps alt">RL Reward Signal</div><div class="pa">&#8594;</div>
+    <div class="ps gr">Coupled Policy</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ SECTION 3 -->
+<div class="sec" id="s3">
+  <div class="sh"><div class="sn">3</div><h2>Mathematical Foundations &amp; Formalism</h2></div>
+
+  <h3>3.1 Shared Foundation: Masked Discrete Diffusion</h3>
+  <p>Both papers build on the same generative substrate. The forward process independently masks each token with probability t &isin; [0,1], and a bidirectional Transformer reverses this process:</p>
+  <div class="eq">
+    Forward:  x_t[i] = [MASK] with prob t, else x_0[i]  (per token, independently)<br><br>
+    Reverse:  p_&theta;(x_0 | x_t, c)  &mdash;  bidirectional Transformer, context c = (visual, language, ego-state)<br><br>
+    RD-1 Loss:  L(&theta;) = E[ &minus;&Sigma;_{i: m_i=1} log p_&theta;(y_i | y_tilde, c) ]  &larr; masked positions ONLY<br><br>
+    RD-2 Loss:  L_DLM(&theta;) = &minus;E[ (1/L) &Sigma;_{i=1}^{L} log p_&theta;(x_0^i | x_t, c) ]  &larr; ALL positions
+  </div>
+  <div class="cb cb-or">
+    <div class="cbt">Key Mathematical Divergence #1: Supervision Scope</div>
+    ReflectDrive-1 supervises only masked positions (standard LLaDA objective). ReflectDrive-2 supervises <strong>all positions</strong> with a uniform 1/L weight. This provides denser gradient signal, prevents the model from ignoring unmasked tokens, and empirically yields more stable optimization and more coherent drafts.
+  </div>
+
+  <h3>3.2 Structure-Aware Perturbations &mdash; RD-2 Only</h3>
+  <p>AutoEdit is trained with analytically-designed perturbations targeting the two dominant failure axes of imitation learning:</p>
+  <div class="eq">
+    Longitudinal:  z_tilde_i = Interp(z_0, &beta;&middot;d_i),  &beta; ~ U(&beta;_min, &beta;_max)<br>
+    &nbsp;&nbsp;&rarr; &beta; &lt; 1: under-progress (conservative);  &beta; &gt; 1: overshoot / late braking<br><br>
+    Lateral:  z_tilde_i = R(&alpha;) &middot; z_i,  R(&alpha;) = [[cos&alpha;, &minus;sin&alpha;], [sin&alpha;, cos&alpha;]],  &alpha; ~ U(&minus;&alpha;_max, &alpha;_max)<br>
+    &nbsp;&nbsp;&rarr; Coherent lateral deviation preserving trajectory smoothness<br><br>
+    AutoEdit Objective:  q_&theta;( &middot; | x_tilde_0, c )  maps perturbed tokens &rarr; clean tokens  (direct T2T rewrite)
+  </div>
+
+  <h3>3.3 Drivable-Area Field Loss &mdash; RD-2 Only</h3>
+  <div class="eq">
+    Spatial distribution:  p^(t)_xy[i,j] = p^(t)_x[i] &middot; p^(t)_y[j]  (marginal product assumption)<br><br>
+    Field loss:  L_field = &Sigma;_t &Sigma;_{i,j} &minus;log(1 &minus; p^(t)_xy[i,j]) &middot; C[i,j]<br><br>
+    DAC cost:  C_DAC[i,j] = max(0, d_out[i,j] &minus; &epsilon;_safe)<br>
+    where d_out[i,j] = 0 if inside drivable area, else distance to nearest drivable cell<br><br>
+    Total SFT objective:  L_sup = L_DLM + &lambda;_SAP &middot; L_SAP + &lambda;_field &middot; L_field
+  </div>
+
+  <h3>3.4 RL over Composed Rollout &mdash; RD-2 Only</h3>
+  <div class="eq">
+    Objective:  J(&theta;) = E_{&tau; ~ &pi;_&theta;(&middot;|o)} [ R(&tau;) ]<br><br>
+    Composed rollout:  c &rarr; {g_m}_{m=1}^{N_g} &rarr; {x^(0)_m} &rarr; {x^(K)_m}<br>
+    &nbsp;&nbsp;(context &rarr; goals &rarr; drafted trajectories &rarr; AutoEdit-refined trajectories)<br><br>
+    Policy gradient (GRPO-style):<br>
+    &nbsp;&nbsp;L(&theta;) = &minus;E[ (1/G) &Sigma;_g (1/L) &Sigma;_s &Sigma;_p  1{x^{s+1}_{g,p} &ne; x^s_{g,p}} &middot; min(r_g&middot;A_g, clip(r_g, 1&plusmn;&epsilon;)&middot;A_g) ]<br><br>
+    Group-relative advantage:  A_g = (R_g &minus; mean(R_{1:G})) / std(R_{1:G})<br>
+    Terminal reward:  R_g = PDMS( x^(K)_g )  &mdash;  assigned to POST-EDIT trajectory
+  </div>
+  <div class="cb cb-tl">
+    <div class="cbt">Key Mathematical Divergence #2: Reward Attribution</div>
+    In ReflectDrive-1, there is no RL stage &mdash; the model is purely SFT. Safety is enforced at inference via rule-based scoring. In ReflectDrive-2, the terminal reward is assigned to the <strong>post-edit</strong> trajectory and policy-gradient credit flows through <em>both</em> the drafting and AutoEdit token transitions. This creates a coupled MDP where the drafter's token distribution is shaped by the editor's downstream effect on the reward.
+  </div>
+
+  <h3>3.5 Inference-Time Correction: Architectural Comparison</h3>
+  <div class="cg">
+    <div class="cc v1">
+      <h4>RD-1: Safety Anchor + Inpainting</h4>
+      <ul>
+        <li>Find first unsafe waypoint t* via S<sub>safe</sub></li>
+        <li>Local search: argmax S<sub>local</sub> over N<sub>&delta;</sub>(y<sub>t*</sub>)</li>
+        <li>Fix corrected token as safety anchor</li>
+        <li>Re-mask remaining tokens &rarr; single-pass inpaint</li>
+        <li>Repeat until safe (max 10 iterations)</li>
+        <li>Rule-based scorer (NC, DAC, TTC, EP, Comfort)</li>
+      </ul>
+    </div>
+    <div class="cc v2">
+      <h4>RD-2: AutoEdit Token-to-Token Rewrite</h4>
+      <ul>
+        <li>Input: full concrete trajectory token sequence</li>
+        <li>Predict replacement tokens at all positions</li>
+        <li>Commit selected replacements (no re-masking)</li>
+        <li>Trained on SAP perturbations (longitudinal + lateral)</li>
+        <li>RL-coupled: editor learns reward-seeking corrections</li>
+        <li>3&ndash;5 AutoEdit steps optimal; plateaus beyond</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ SECTION 4 -->
+<div class="sec" id="s4">
+  <div class="sh"><div class="sn">4</div><h2>Methodological Pros &amp; Cons Analysis</h2></div>
+
+  <h3>4.1 ReflectDrive-1</h3>
+  <div class="pc">
+    <div class="pros">
+      <h5>&#10003; Strengths</h5>
+      <ul>
+        <li><strong>Gradient-free inference</strong>: No backpropagation at inference; efficient per-iteration correction via discrete search</li>
+        <li><strong>Hard constraint satisfaction</strong>: Rule-based oracle guarantees enforcement (DAC = 99.3), approaching human-level</li>
+        <li><strong>Interpretability</strong>: Safety violations explicitly identified and corrected at specific waypoints; fully transparent process</li>
+        <li><strong>No RL instability</strong>: Avoids training instability, sim-to-real gap, and unsafe online rollout issues</li>
+        <li><strong>Inference scaling</strong>: Performance improves with more exploration steps and iterations (demonstrated empirically)</li>
+        <li><strong>Plug-and-play</strong>: Reflection mechanism applicable in principle to any discrete diffusion planner</li>
+        <li><strong>Oracle upper bound</strong>: With GT agent states, nearly matches human performance (94.7 PDMS)</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h5>&#10007; Weaknesses</h5>
+      <ul>
+        <li><strong>Constant-velocity assumption</strong>: Safety scorer leads to inaccurate TTC estimation in dynamic scenarios</li>
+        <li><strong>Decoupled training</strong>: Base model not trained to produce "correctable" drafts; drafter and editor are independent</li>
+        <li><strong>Oscillation failure mode</strong>: Can oscillate between boundary violations and collision avoidance in constrained spaces</li>
+        <li><strong>Navigation blindness</strong>: Reward function does not account for navigation correctness, causing incorrect correction directions</li>
+        <li><strong>Local search limitation</strong>: Manhattan neighborhood search cannot accommodate large-scale behavioral changes</li>
+        <li><strong>No temporal consistency</strong>: Each frame planned independently; no inter-frame plan continuity</li>
+        <li><strong>Weak base model</strong>: Base PDMS 84.8; the reflection mechanism carries most of the performance burden</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>4.2 ReflectDrive-2</h3>
+  <div class="pc">
+    <div class="pros">
+      <h5>&#10003; Strengths</h5>
+      <ul>
+        <li><strong>Coupled draft-edit optimization</strong>: RL over composed rollout amplifies AutoEdit gain from +0.3 to +1.9 PDMS</li>
+        <li><strong>Structure-aware perturbations</strong>: SAP targets the specific failure modes of imitation learning (longitudinal + lateral)</li>
+        <li><strong>Efficient inference stack</strong>: KV cache + ASD + action-expert FFN + fused CUDA = 31.8 ms average latency</li>
+        <li><strong>Temporal consistency</strong>: ASD reuses AutoEdit as inter-frame temporal refiner, ensuring plan continuity</li>
+        <li><strong>Strong base model</strong>: SFT reaches 87.7; RL pushes to 89.1; AutoEdit brings final score to 91.0 PDMS</li>
+        <li><strong>Best-of-N diversity</strong>: 3.8 PDMS gap between single and oracle-best-of-6 shows genuinely multi-modal posterior</li>
+        <li><strong>All-position objective</strong>: More stable optimization and coherent drafts compared to masked-only supervision</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h5>&#10007; Weaknesses</h5>
+      <ul>
+        <li><strong>Fixed-resolution BEV tokens</strong>: Spatial precision bounded by coordinate-bin size; no residual offsets or hybrid heads</li>
+        <li><strong>Lightweight RL reward</strong>: PDMS is a planning proxy, not a full closed-loop driving objective</li>
+        <li><strong>Limited perturbation coverage</strong>: SAP misses interaction-level failures (yielding timing, cut-in response, gap selection)</li>
+        <li><strong>Proprietary initialization</strong>: 0.7B backbone from proprietary pretrained weights; reproducibility limited</li>
+        <li><strong>RL training complexity</strong>: Two-stage training (SFT then RL) with composed rollout sampling is more complex</li>
+        <li><strong>NC and TTC not best-in-class</strong>: NC (97.3) and TTC (92.5) are below some baselines despite highest overall PDMS</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ SECTION 5 -->
+<div class="sec" id="s5">
+  <div class="sh"><div class="sn">5</div><h2>Philosophical Gains &amp; Losses Between Models</h2></div>
+  <p>The transition from ReflectDrive-1 to ReflectDrive-2 is not merely an engineering upgrade &mdash; it represents a fundamental shift in the <em>epistemological stance</em> toward safety and self-correction in autonomous driving.</p>
+
+  <h3>5.1 What is Gained</h3>
+  <div class="cb cb-gn">
+    <div class="cbt">Gain 1: Endogenous vs. Exogenous Safety</div>
+    <p>ReflectDrive-1 treats safety as <strong>exogenous</strong> &mdash; an external oracle that filters and corrects the model's output. The model itself has no incentive to produce safe trajectories; safety is enforced from outside. ReflectDrive-2 moves toward <strong>endogenous</strong> safety: the RL reward signal shapes the model's internal representations so that safe, revisable trajectories are more likely under the learned policy. Safety becomes a property of the policy distribution, not just a post-hoc filter.</p>
+  </div>
+  <div class="cb cb-gn">
+    <div class="cbt">Gain 2: Coupled Credit Assignment</div>
+    <p>In ReflectDrive-1, the drafter and editor are epistemically isolated &mdash; the drafter has no knowledge of how its outputs will be corrected, and the editor has no knowledge of what reward its corrections will yield. ReflectDrive-2 solves this through <strong>joint credit assignment</strong> via the composed rollout MDP. The drafter learns to emit "revisable" token distributions (whose post-edit score exceeds pre-edit score), and the editor learns "reward-seeking" corrections. This is a form of <em>emergent cooperation</em> between two phases of the same policy.</p>
+  </div>
+  <div class="cb cb-gn">
+    <div class="cbt">Gain 3: Structured Error Modeling</div>
+    <p>ReflectDrive-1's safety scorer is a generic rule-checker (NC, DAC, TTC). It does not model the <em>structure</em> of how imitation-learned policies fail. ReflectDrive-2's SAP perturbations are analytically derived from the known failure axes of behavior cloning: longitudinal covariate shift (speed misjudgment) and lateral covariate shift (heading drift). This represents a <strong>theory-driven inductive bias</strong> &mdash; the editor is trained on the specific failure modes it will encounter at deployment, not generic noise.</p>
+  </div>
+  <div class="cb cb-gn">
+    <div class="cbt">Gain 4: Deployment Efficiency as a First-Class Concern</div>
+    <p>ReflectDrive-1 acknowledges inference overhead but treats it as a secondary concern. ReflectDrive-2 co-designs the inference stack with the modeling paradigm: the decision&ndash;draft&ndash;reflect structure directly enables shared-prefix KV reuse and ASD temporal refinement. The <strong>architecture and runtime are co-designed</strong>, not independently optimized. This is a more mature engineering philosophy for production systems.</p>
+  </div>
+
+  <h3>5.2 What is Lost</h3>
+  <div class="cb cb-rd">
+    <div class="cbt">Loss 1: Hard Constraint Guarantees</div>
+    <p>ReflectDrive-1's rule-based oracle provides <strong>hard constraint enforcement</strong>: if a trajectory violates DAC, the system will iteratively correct it until compliance is achieved (within budget). ReflectDrive-2 has no such guarantee. The RL reward encourages safe behavior in expectation, but a single inference pass may still produce a trajectory that violates hard constraints. This is a fundamental trade-off between <em>probabilistic alignment</em> (RL) and <em>deterministic enforcement</em> (rule-based).</p>
+  </div>
+  <div class="cb cb-rd">
+    <div class="cbt">Loss 2: Interpretability and Transparency</div>
+    <p>In ReflectDrive-1, the correction process is fully transparent: we can identify exactly which waypoint was unsafe, what local search was performed, and what anchor was selected. In ReflectDrive-2, AutoEdit performs a learned token-to-token rewrite whose internal reasoning is opaque. The RL-coupled editor may learn correction strategies that are effective but not interpretable. This is the classic <strong>interpretability&ndash;performance trade-off</strong> in learned vs. rule-based systems.</p>
+  </div>
+  <div class="cb cb-rd">
+    <div class="cbt">Loss 3: Modularity and Plug-and-Play Flexibility</div>
+    <p>ReflectDrive-1's reflection mechanism is largely decoupled from the base model &mdash; in principle applicable to any discrete diffusion planner. ReflectDrive-2's AutoEdit is tightly coupled to the specific training procedure (SAP + RL), making it less modular. The coupling that makes it powerful also makes it harder to transfer to other architectures without re-training the full composed rollout.</p>
+  </div>
+  <div class="cb cb-rd">
+    <div class="cbt">Loss 4: Inference-Time Scalability</div>
+    <p>ReflectDrive-1 demonstrates <strong>inference scaling</strong>: more exploration steps and iterations yield better safety performance. This is a desirable property &mdash; compute can be traded for quality at inference time. ReflectDrive-2 shows that AutoEdit performance plateaus at 3&ndash;5 steps; excess rewriting disturbs a good draft. The RL-trained editor has a more constrained inference-time scaling behavior, trading flexible compute allocation for a more efficient but less scalable correction process.</p>
+  </div>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Philosophical Dimension</th><th>ReflectDrive-1</th><th>ReflectDrive-2</th><th>Direction</th></tr></thead>
+      <tbody>
+        <tr><td>Safety enforcement paradigm</td><td>Exogenous (rule-based oracle)</td><td>Endogenous (reward-aligned policy)</td><td><span class="tag tb">Shift</span></td></tr>
+        <tr><td>Hard constraint guarantee</td><td>Yes (iterative enforcement)</td><td>No (probabilistic alignment)</td><td><span class="tag tr">Loss</span></td></tr>
+        <tr><td>Drafter&ndash;editor coupling</td><td>None (independent)</td><td>Strong (joint RL reward)</td><td><span class="tag tg">Gain</span></td></tr>
+        <tr><td>Error structure modeling</td><td>Generic rule-checking</td><td>Theory-driven SAP (longitudinal + lateral)</td><td><span class="tag tg">Gain</span></td></tr>
+        <tr><td>Interpretability</td><td>High (explicit anchor search)</td><td>Low (learned T2T rewrite)</td><td><span class="tag tr">Loss</span></td></tr>
+        <tr><td>Inference-time scalability</td><td>Yes (more iterations = better safety)</td><td>Limited (plateaus at 3&ndash;5 steps)</td><td><span class="tag tr">Loss</span></td></tr>
+        <tr><td>Temporal consistency</td><td>None</td><td>ASD inter-frame refinement</td><td><span class="tag tg">Gain</span></td></tr>
+        <tr><td>Deployment efficiency</td><td>Secondary concern</td><td>Co-designed with architecture</td><td><span class="tag tg">Gain</span></td></tr>
+        <tr><td>Modularity</td><td>High (plug-and-play reflection)</td><td>Low (tightly coupled to training)</td><td><span class="tag tr">Loss</span></td></tr>
+        <tr><td>Training complexity</td><td>SFT only</td><td>Two-stage SFT + RL</td><td><span class="tag to">Trade-off</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ SECTION 6 -->
+<div class="sec" id="s6">
+  <div class="sh"><div class="sn">6</div><h2>Developmental Trajectory &amp; Comparative Overview</h2></div>
+
+  <h3>6.1 Evolution of Core Design Decisions</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Design Dimension</th><th>ReflectDrive-1</th><th>ReflectDrive-2</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Base model</strong></td><td>LLaDA-V (public pretrained)</td><td>Proprietary 0.7B DLM + 0.1B ViT</td></tr>
+        <tr><td><strong>Training objective</strong></td><td>Masked-position CE only</td><td>All-position CE + SAP loss + DAC field loss + RL</td></tr>
+        <tr><td><strong>Correction mechanism</strong></td><td>Local search + inpainting (re-mask)</td><td>Direct T2T rewrite (no re-masking)</td></tr>
+        <tr><td><strong>Correction training</strong></td><td>None (inference-only)</td><td>SAP perturbation SFT + RL coupling</td></tr>
+        <tr><td><strong>Safety enforcement</strong></td><td>Rule-based scorer (NC, DAC, TTC, EP)</td><td>DAC field loss (training) + RL reward (PDMS)</td></tr>
+        <tr><td><strong>Goal sampling</strong></td><td>Top-K + NMS (K=3, threshold=0.9m)</td><td>Top-K + NMS, multiple per RL group (3 goals &times; 2 drafts)</td></tr>
+        <tr><td><strong>RL stage</strong></td><td>None</td><td>GRPO-style, full draft&#8594;AutoEdit rollout</td></tr>
+        <tr><td><strong>KV caching</strong></td><td>Not addressed</td><td>Shared-prefix causal + block-wise bidirectional</td></tr>
+        <tr><td><strong>Temporal consistency</strong></td><td>None</td><td>ASD: full-step + lite-step alternation</td></tr>
+        <tr><td><strong>Hardware target</strong></td><td>Not specified</td><td>NVIDIA Thor (31.8 ms avg latency)</td></tr>
+        <tr><td><strong>NAVSIM PDMS</strong></td><td>91.1 (with reflection)</td><td>91.0 (single) / 94.8 (best-of-6)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>6.2 The Three Developmental Arcs</h3>
+  <h4>Arc 1: From Inference-Time to Training-Time Correction</h4>
+  <p>ReflectDrive-1's correction is entirely an inference-time procedure: the base model is trained once (SFT), and safety is enforced through a separate inference loop. This is analogous to <em>test-time compute scaling</em> &mdash; the model is fixed, and quality is improved by spending more inference compute. ReflectDrive-2 internalizes correction into the training process: AutoEdit is trained with SAP and then RL-coupled to the drafter. The correction capability is baked into the weights, not computed at runtime.</p>
+
+  <h4>Arc 2: From Rule-Based to Reward-Based Safety</h4>
+  <p>The safety signal evolves from explicit rule-checking (NC, DAC, TTC binary scores in ReflectDrive-1) to a learned reward proxy (PDMS in ReflectDrive-2). This mirrors a broader trend in AI safety research: from <em>constrained optimization</em> (hard rules) to <em>reward shaping</em> (soft alignment). The trade-off is well-understood: reward-based approaches are more flexible and scalable, but provide weaker guarantees and are susceptible to reward hacking.</p>
+
+  <h4>Arc 3: From Modular to Integrated Architecture</h4>
+  <p>ReflectDrive-1 has a modular architecture: base model &#8594; goal generation &#8594; safety scoring &#8594; correction loop. Each component is independently designed and can be replaced. ReflectDrive-2 integrates all components into a unified training objective and inference pipeline. The shared token substrate, the action-expert FFN, the KV cache design, and the ASD temporal refinement are all co-designed. This integration enables better performance but reduces modularity and increases coupling.</p>
+
+  <h3>6.3 Positioning Within the Broader Literature</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Method Category</th><th>Representative</th><th>RD-1 Position</th><th>RD-2 Position</th></tr></thead>
+      <tbody>
+        <tr><td>Autoregressive VLA</td><td>AutoVLA, DriveVLM</td><td>Replaces with parallel discrete diffusion</td><td>Adds RL coupling; outperforms in PDMS</td></tr>
+        <tr><td>Continuous diffusion planner</td><td>DiffusionDrive, GoalFlow</td><td>Avoids gradient-based guidance</td><td>Surpasses with camera-only input</td></tr>
+        <tr><td>RL-based driving</td><td>GIGAFLOW, CARL</td><td>Avoids online rollouts; inference-time safety</td><td>Offline RL over composed rollout; no sim-to-real gap</td></tr>
+        <tr><td>Discrete diffusion LLM</td><td>LLaDA, d1, d2, LLaDA 2.1</td><td>Applies to driving; adds safety reflection</td><td>Adds composed rollout RL; co-designs runtime</td></tr>
+        <tr><td>Refinement-augmented diffusion</td><td>DriveFine</td><td>N/A (concurrent work)</td><td>Key distinction: joint vs. separate credit assignment</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ SECTION 7 -->
+<div class="sec" id="s7">
+  <div class="sh"><div class="sn">7</div><h2>Empirical Performance Analysis</h2></div>
+
+  <h3>7.1 NAVSIM Benchmark Results (Consolidated)</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Method</th><th>Input</th><th>NC&#8593;</th><th>DAC&#8593;</th><th>TTC&#8593;</th><th>Comf.&#8593;</th><th>EP&#8593;</th><th>PDMS&#8593;</th></tr></thead>
+      <tbody>
+        <tr><td>UniAD</td><td>Cam</td><td>97.8</td><td>91.9</td><td>92.9</td><td>100.0</td><td>78.8</td><td>83.4</td></tr>
+        <tr><td>TransFuser</td><td>C+L</td><td>97.7</td><td>92.8</td><td>92.8</td><td>100.0</td><td>79.2</td><td>84.0</td></tr>
+        <tr><td>Hydra-MDP</td><td>C+L</td><td>98.3</td><td>96.0</td><td>94.6</td><td>100.0</td><td>78.7</td><td>86.5</td></tr>
+        <tr><td>DiffusionDrive</td><td>C+L</td><td>98.2</td><td>96.2</td><td>94.7</td><td>100.0</td><td>82.2</td><td>88.1</td></tr>
+        <tr><td>GoalFlow</td><td>C+L</td><td>98.4</td><td>98.3</td><td>94.6</td><td>100.0</td><td>85.0</td><td>90.3</td></tr>
+        <tr><td>AutoVLA</td><td>Cam</td><td>98.4</td><td>95.6</td><td>98.0</td><td>99.9</td><td>81.9</td><td>89.1</td></tr>
+        <tr><td>DriveVLA-W0</td><td>Cam</td><td>98.7</td><td>99.1</td><td>95.3</td><td>99.3</td><td>83.3</td><td>90.2</td></tr>
+        <tr><td>ReCogDrive</td><td>Cam</td><td>97.9</td><td>97.3</td><td>94.9</td><td>100.0</td><td>87.3</td><td>90.8</td></tr>
+        <tr style="background:#e8f5e9"><td><strong>ReflectDrive-1</strong></td><td>Cam</td><td>97.7</td><td><strong>99.3</strong></td><td>93.5</td><td>100.0</td><td>86.9</td><td><strong>91.1</strong></td></tr>
+        <tr style="background:#e0f2f1"><td><strong>ReflectDrive-2 (single)</strong></td><td>Cam</td><td>97.3</td><td>98.1</td><td>92.5</td><td>100.0</td><td><strong>89.4</strong></td><td><strong>91.0</strong></td></tr>
+        <tr style="background:#e0f2f1"><td><strong>ReflectDrive-2 (best-of-6)</strong></td><td>Cam</td><td>98.5</td><td>99.2</td><td>95.5</td><td>99.8</td><td>93.8</td><td><strong>94.8</strong></td></tr>
+        <tr style="background:#fff9c4"><td><em>Human reference</em></td><td>&mdash;</td><td>100.0</td><td>100.0</td><td>100.0</td><td>99.9</td><td>87.5</td><td>94.8</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>7.2 The Central Empirical Finding: RL Amplification of AutoEdit</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Training Setting</th><th>w/o AutoEdit</th><th>w/ AutoEdit</th><th>&Delta; PDMS</th></tr></thead>
+      <tbody>
+        <tr><td>DLM only</td><td>84.8</td><td>85.0</td><td>+0.2</td></tr>
+        <tr><td>DLM + DACF</td><td>87.2</td><td>87.3</td><td>+0.1</td></tr>
+        <tr><td>DLM + DACF + AutoEdit training</td><td>87.7</td><td>88.0</td><td>+0.3</td></tr>
+        <tr style="background:#e0f2f1"><td><strong>DLM + DACF + AutoEdit + RL</strong></td><td>89.1</td><td><strong>91.0</strong></td><td><strong>+1.9</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cb cb-tl">
+    <div class="cbt">Central Empirical Finding</div>
+    The +1.9 PDMS gain from inference-time AutoEdit after RL (vs. +0.3 without RL) is the central empirical result of ReflectDrive-2. It directly validates the philosophical claim that drafter-editor coupling through a shared reward signal is necessary for effective self-correction. The RL stage does not merely improve the base policy &mdash;

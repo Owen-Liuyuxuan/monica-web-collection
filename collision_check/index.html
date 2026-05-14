@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Collision Risk Metrics</title>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --border: #2e3148;
+    --accent-drac: #f97316;
+    --accent-pet: #22d3ee;
+    --accent-ttc: #a78bfa;
+    --accent-rss: #4ade80;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --danger: #f87171;
+    --safe: #4ade80;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; padding: 24px; }
+  h1 { text-align: center; font-size: 1.6rem; margin-bottom: 6px; letter-spacing: 0.05em; }
+  .subtitle { text-align: center; color: var(--muted); font-size: 0.85rem; margin-bottom: 28px; }
+
+  /* Tab nav */
+  .tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 8px 20px; border-radius: 999px; border: 2px solid transparent;
+    cursor: pointer; font-size: 0.85rem; font-weight: 600; background: var(--card);
+    color: var(--muted); transition: all 0.2s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active-drac { border-color: var(--accent-drac); color: var(--accent-drac); background: #f9731620; }
+  .tab-btn.active-pet  { border-color: var(--accent-pet);  color: var(--accent-pet);  background: #22d3ee20; }
+  .tab-btn.active-ttc  { border-color: var(--accent-ttc);  color: var(--accent-ttc);  background: #a78bfa20; }
+  .tab-btn.active-rss  { border-color: var(--accent-rss);  color: var(--accent-rss);  background: #4ade8020; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Card layout */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 22px; margin-bottom: 18px;
+  }
+  .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .badge {
+    font-size: 0.72rem; padding: 2px 10px; border-radius: 999px; font-weight: 700; letter-spacing: 0.05em;
+  }
+
+  /* Road diagram */
+  .road-wrap { background: #12151f; border-radius: 10px; padding: 16px; margin: 14px 0; overflow-x: auto; }
+  svg text { font-family: 'Segoe UI', sans-serif; }
+
+  /* Formula box */
+  .formula-box {
+    background: #12151f; border-left: 4px solid; border-radius: 8px;
+    padding: 14px 18px; margin: 12px 0; font-size: 0.95rem;
+  }
+
+  /* Comparison table */
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { background: #12151f; padding: 10px 14px; text-align: left; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #ffffff08; }
+
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  .tag-kin { background: #f9731620; color: var(--accent-drac); }
+  .tag-temp { background: #22d3ee20; color: var(--accent-pet); }
+  .tag-urg { background: #a78bfa20; color: var(--accent-ttc); }
+  .tag-safe { background: #4ade8020; color: var(--accent-rss); }
+
+  /* Risk meter */
+  .risk-bar-wrap { margin: 8px 0; }
+  .risk-label { font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; }
+  .risk-bar { height: 8px; border-radius: 4px; background: #2e3148; position: relative; overflow: hidden; }
+  .risk-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+
+  /* Grid */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:640px){ .grid2 { grid-template-columns: 1fr; } }
+
+  .info-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+  .info-chip {
+    background: #12151f; border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 0.8rem; flex: 1; min-width: 140px;
+  }
+  .info-chip .label { color: var(--muted); font-size: 0.72rem; margin-bottom: 3px; }
+  .info-chip .val { font-weight: 700; font-size: 1rem; }
+
+  /* Interactive slider section */
+  .sim-section { background: #12151f; border-radius: 10px; padding: 16px; margin: 14px 0; }
+  .sim-title { font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 12px; }
+  .slider-row { display: flex; align-items: center; gap: 12px; margin: 8px 0; font-size: 0.82rem; }
+  .slider-row label { width: 160px; color: var(--muted); }
+  .slider-row input[type=range] { flex: 1; accent-color: var(--accent-drac); }
+  .slider-row .sval { width: 60px; text-align: right; font-weight: 700; color: var(--text); }
+  .result-display {
+    margin-top: 14px; padding: 12px 16px; border-radius: 8px;
+    font-size: 0.9rem; font-weight: 600; text-align: center;
+  }
+  .res-safe { background: #4ade8020; color: var(--safe); border: 1px solid #4ade8040; }
+  .res-warn { background: #fbbf2420; color: #fbbf24; border: 1px solid #fbbf2440; }
+  .res-danger { background: #f8717120; color: var(--danger); border: 1px solid #f8717140; }
+
+  /* Overview comparison table panel */
+  #panel-compare .card-title { color: var(--text); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+</style>
+</head>
+<body>
+
+<h1>🚗 Collision Risk Metrics</h1>
+<p class="subtitle">DRAC · PET · TTC · RSS — Concepts, Formulas & Interactive Comparison</p>
+
+<div class="tabs">
+  <button class="tab-btn active-drac" onclick="showPanel('drac',this,'active-drac')">DRAC</button>
+  <button class="tab-btn" onclick="showPanel('pet',this,'active-pet')">PET</button>
+  <button class="tab-btn" onclick="showPanel('ttc',this,'active-ttc')">TTC</button>
+  <button class="tab-btn" onclick="showPanel('rss',this,'active-rss')">RSS</button>
+  <button class="tab-btn" onclick="showPanel('compare',this,'active-rss')" style="border-color:#64748b;color:#64748b;">📊 Compare All</button>
+</div>
+
+<!-- ═══════════════ DRAC ═══════════════ -->
+<div id="panel-drac" class="panel active">
+  <div class="card">
+    <div class="card-title" style="color:var(--accent-drac)">
+      <span class="badge" style="background:#f9731630;color:var(--accent-drac)">DRAC</span>
+      Deceleration Rate to Avoid Collision
+    </div>
+    <p style="color:var(--muted);font-size:0.88rem;line-height:1.7">
+      DRAC measures the <strong style="color:var(--text)">minimum deceleration required</strong> for the ego vehicle (and/or the other vehicle) to avoid a collision.
+      It answers: <em>"Is the required braking physically feasible?"</em>
+      In the context of <strong style="color:var(--accent-drac)">DRAC + PET</strong>, both vehicles are assumed to decelerate cooperatively, and a PET margin is used as the safety buffer.
+    </p>
+    <div class="formula-box" style="border-color:var(--accent-drac)">
+      <div style="color:var(--accent-drac);font-size:0.78rem;font-weight:700;margin-bottom:8px">FORMULA</div>
+      \[ DRAC = \frac{(v_{ego} - v_{obj})^2}{2 \cdot d_{gap}} \]
+      <div style="color:var(--muted);font-size:0.8rem;margin-top:8px">
+        where \(v_{ego}\) = ego speed, \(v_{obj}\) = object speed, \(d_{gap}\) = current gap between vehicles
+      </div>
+    </div>
+    <div class="road-wrap">
+      <svg width="560" height="110" viewBox="0 0 560 110">
+        <!-- Road -->
+        <rect x="0" y="40" width="560" height="60" fill="#1e2235" rx="4"/>
+        <line x1="0" y1="70" x2="560" y2="70" stroke="#3a3f5c" stroke-width="1" stroke-dasharray="20,12"/>
+        <!-- Ego car -->
+        <rect x="30" y="48" width="80" height="36" fill="#f97316" rx="6"/>
+        <text x="70" y="71" fill="white" font-size="11" text-anchor="middle" font-weight="bold">EGO</text>
+        <!-- Arrow ego -->
+        <line x1="112" y1="66" x2="200" y2="66" stroke="#f97316" stroke-width="2.5" marker-end="url(#arrowO)"/>
+        <text x="155" y="60" fill="#f97316" font-size="10">v_ego</text>
+        <!-- Object car -->
+        <rect x="380" y="48" width="80" height="36" fill="#64748b" rx="6"/>
+        <text x="420" y="71" fill="white" font-size="11" text-anchor="middle" font-weight="bold">OBJ</text>
+        <!-- Arrow obj (slower) -->
+        <line x1="462" y1="66" x2="510" y2="66" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arrowG)"/>
+        <text x="485" y="60" fill="#94a3b8" font-size="10">v_obj</text>
+        <!-- Gap brace -->
+        <line x1="112" y1="90" x2="378" y2="90" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <line x1="112" y1="85" x2="112" y2="95" stroke="#22d3ee" stroke-width="1.5"/>
+        <line x1="378" y1="85" x2="378" y2="95" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="245" y="108" fill="#22d3ee" font-size="11" text-anchor="middle">d_gap</text>
+        <!-- Decel arrows -->
+        <path d="M 90 48 Q 90 20 130 20" stroke="#f97316" stroke-width="1.5" fill="none" stroke-dasharray="3,2"/>
+        <text x="135" y="18" fill="#f97316" font-size="10">decel ↓</text>
+        <path d="M 420 48 Q 420 20 380 20" stroke="#94a3b8" stroke-width="1.5" fill="none" stroke-dasharray="3,2"/>
+        <text x="310" y="18" fill="#94a3b8" font-size="10">decel ↓</text>
+        <!-- Markers -->
+        <defs>
+          <marker id="arrowO" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#f97316"/>
+          </marker>
+          <marker id="arrowG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="sim-section">
+      <div class="sim-title">🧮 Interactive DRAC Calculator</div>
+      <div class="slider-row">
+        <label>Ego speed (m/s)</label>
+        <input type="range" id="d-vego" min="1" max="30" value="15" oninput="calcDRAC()">
+        <span class="sval" id="d-vego-v">15</span>
+      </div>
+      <div class="slider-row">
+        <label>Object speed (m/s)</label>
+        <input type="range" id="d-vobj" min="0" max="25" value="5" oninput="calcDRAC()">
+        <span class="sval" id="d-vobj-v">5</span>
+      </div>
+      <div class="slider-row">
+        <label>Gap (m)</label>
+        <input type="range" id="d-gap" min="5" max="100" value="30" oninput="calcDRAC()">
+        <span class="sval" id="d-gap-v">30</span>
+      </div>
+      <div class="slider-row">
+        <label>Max comfortable decel (m/s²)</label>
+        <input type="range" id="d-amax" min="1" max="10" value="4" step="0.5" oninput="calcDRAC()">
+        <span class="sval" id="d-amax-v">4.0</span>
+      </div>
+      <div id="drac-result" class="result-display res-safe">—</div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-chip"><div class="label">Perspective</div><div class="val">Kinematic</div></div>
+      <div class="info-chip"><div class="label">Both vehicles</div><div class="val">Cooperate</div></div>
+      <div class="info-chip"><div class="label">PET role</div><div class="val">Safety margin</div></div>
+      <div class="info-chip"><div class="label">Threshold</div><div class="val">a_max_comfortable</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PET ═══════════════ -->
+<div id="panel-pet" class="panel">
+  <div class="card">
+    <div class="card-title" style="color:var(--accent-pet)">
+      <span class="badge" style="background:#22d3ee30;color:var(--accent-pet)">PET</span>
+      Post-Encroachment Time
+    </div>
+    <p style="color:var(--muted);font-size:0.88rem;line-height:1.7">
+      PET measures the <strong style="color:var(--text)">time gap between two vehicles occupying the same conflict zone</strong>.
+      It is defined as the time from when the first vehicle <em>clears</em> the conflict point to when the second vehicle <em>arrives</em> at it.
+      A small PET means a near-miss; PET = 0 means a collision.
+    </p>
+    <div class="formula-box" style="border-color:var(--accent-pet)">
+      <div style="color:var(--accent-pet);font-size:0.78rem;font-weight:700;margin-bottom:8px">FORMULA</div>
+      \[ PET = t_{clear} - t_{arrive} \]
+      <div style="color:var(--muted);font-size:0.8rem;margin-top:8px">
+        \(t_{clear}\): time when vehicle A clears the conflict zone<br>
+        \(t_{arrive}\): time when vehicle B enters the conflict zone<br>
+        <strong style="color:#fbbf24">PET &gt; 0</strong>: near-miss &nbsp;|&nbsp; <strong style="color:#f87171">PET ≤ 0</strong>: collision
+      </div>
+    </div>
+    <div class="road-wrap">
+      <svg width="560" height="140" viewBox="0 0 560 140">
+        <!-- Horizontal road -->
+        <rect x="0" y="55" width="560" height="50" fill="#1e2235" rx="4"/>
+        <!-- Vertical road -->
+        <rect x="230" y="0" width="50" height="140" fill="#1e2235" rx="4"/>
+        <!-- Conflict zone -->
+        <rect x="230" y="55" width="50" height="50" fill="#22d3ee22" stroke="#22d3ee" stroke-width="1.5" rx="2"/>
+        <text x="255" y="85" fill="#22d3ee" font-size="10" text-anchor="middle" font-weight="bold">CONFLICT</text>
+        <text x="255" y="97" fill="#22d3ee" font-size="10" text-anchor="middle">ZONE</text>
+        <!-- Car A (already cleared) -->
+        <rect x="295" y="62" width="60" height="32" fill="#22d3ee" rx="5"/>
+        <text x="325" y="82" fill="#0f1117" font-size="10" text-anchor="middle" font-weight="bold">A (clear)</text>
+        <!-- Car B (approaching) -->
+        <rect x="100" y="62" width="60" height="32" fill="#64748b" rx="5"/>
+        <text x="130" y="82" fill="white" font-size="10" text-anchor="middle" font-weight="bold">B (arrive)</text>
+        <!-- Arrow B -->
+        <line x1="162" y1="78" x2="226" y2="78" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrowB)"/>
+        <!-- PET brace on timeline -->
+        <line x1="295" y1="120" x2="360" y2="120" stroke="#22d3ee" stroke-width="1.5"/>
+        <line x1="295" y1="115" x2="295" y2="125" stroke="#22d3ee" stroke-width="1.5"/>
+        <line x1="360" y1="115" x2="360" y2="125" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="328" y="137" fill="#22d3ee" font-size="11" text-anchor="middle">PET (time gap)</text>
+        <!-- t_clear label -->
+        <text x="295" y="113" fill="#22d3ee" font-size="9" text-anchor="middle">t_clear</text>
+        <!-- t_arrive label -->
+        <text x="360" y="113" fill="#fbbf24" font-size="9" text-anchor="middle">t_arrive</text>
+        <defs>
+          <marker id="arrowB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="grid2">
+      <div class="card" style="background:#12151f">
+        <div style="color:var(--accent-pet);font-weight:700;margin-bottom:8px">PET as DRAC Margin</div>
+        <p style="color:var(--muted);font-size:0.82rem;line-height:1.6">
+          In <strong>DRAC+PET</strong> checks, PET defines the <em>minimum acceptable time gap</em> after avoidance maneuver. Both vehicles decelerate and must achieve at least this temporal separation.
+        </p>
+      </div>
+      <div class="card" style="background:#12151f">
+        <div style="color:var(--accent-ttc);font-weight:700;margin-bottom:8px">PET as TTC Near-Miss Threshold</div>
+        <p style="color:var(--muted);font-size:0.82rem;line-height:1.6">
+          In <strong>TTC+PET</strong> checks, PET defines the near-miss boundary. If TTC is within braking distance and PET is small, the scenario is flagged as high-risk.
+        </p>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-chip"><div class="label">Perspective</div><div class="val">Temporal</div></div>
+      <div class="info-chip"><div class="label">Measurement</div><div class="val">Time gap at conflict</div></div>
+      <div class="info-chip"><div class="label">Typical threshold</div><div class="val">1.5 – 3.0 s</div></div>
+      <div class="info-chip"><div class="label">Used with</div><div class="val">DRAC & TTC</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ TTC ═══════════════ -->
+<div id="panel-ttc" class="panel">
+  <div class="card">
+    <div class="card-title" style="color:var(--accent-ttc)">
+      <span class="badge" style="background:#a78bfa30;color:var(--accent-ttc)">TTC</span>
+      Time to Collision
+    </div>
+    <p style="color:var(--muted);font-size:0.88rem;line-height:1.7">
+      TTC measures <strong style="color:var(--text)">how long until a collision occurs</strong> if both vehicles maintain their current speeds.
+      In the <strong style="color:var(--accent-ttc)">TTC + PET</strong> context, the ego travels at planned speed and checks whether a near-miss (small PET) occurs within the braking distance — i.e., whether the ego <em>could not stop in time</em>.
+    </p>
+    <div class="formula-box" style="border-color:var(--accent-ttc)">
+      <div style="color:var(--accent-ttc);font-size:0.78rem;font-weight:700;margin-bottom:8px">FORMULA</div>
+      \[ TTC = \frac{d_{gap}}{v_{ego} - v_{obj}} \quad (v_{ego} > v_{obj}) \]
+      <div style="color:var(--muted);font-size:0.8rem;margin-top:8px">
+        Braking distance: \(\displaystyle d_{brake} = \frac{v_{ego}^2}{2 \cdot a_{max}}\)<br>
+        Risk condition: <strong style="color:#f87171">TTC is small AND near-miss occurs within \(d_{brake}\)</strong>
+      </div>
+    </div>
+    <div class="road-wrap">
+      <svg width="560" height="100" viewBox="0 0 560 100">
+        <rect x="0" y="30" width="560" height="55" fill="#1e2235" rx="4"/>
+        <line x1="0" y1="57" x2="560" y2="57" stroke="#3a3f5c" stroke-width="1" stroke-dasharray="20,12"/>
+        <!-- Ego -->
+        <rect x="20" y="38" width="70" height="32" fill="#a78bfa" rx="5"/>
+        <text x="55" y="58" fill="white" font-size="10" text-anchor="middle" font-weight="bold">EGO</text>
+        <!-- Speed arrow -->
+        <line x1="92" y1="54" x2="170" y2="54" stroke="#a78bfa" stroke-width="2.5" marker-end="url(#arrowP)"/>
+        <text x="130" y="48" fill="#a78bfa" font-size="10">v_ego (planned)</text>
+        <!-- Obj -->
+        <rect x="360" y="38" width="70" height="32" fill="#64748b" rx="5"/>
+        <text x="395" y="58" fill="white" font-size="10" text-anchor="middle" font-weight="bold">OBJ</text>
+        <!-- Braking zone -->
+        <rect x="92" y="30" width="200" height="55" fill="#f8717110" stroke="#f87171" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="192" y="26" fill="#f87171" font-size="10" text-anchor="middle">← braking distance d_brake →</text>
+        <!-- TTC arrow -->
+        <line x1="92" y1="82" x2="358" y2="82" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <line x1="92" y1="77" x2="92" y2="87" stroke="#a78bfa" stroke-width="1.5"/>
+        <line x1="358" y1="77" x2="358" y2="87" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="225" y="97" fill="#a78bfa" font-size="11" text-anchor="middle">TTC = gap / (v_ego - v_obj)</text>
+        <defs>
+          <marker id="arrowP" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#a78bfa"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="sim-section">
+      <div class="sim-title">🧮 Interactive TTC Calculator</div>
+      <div class="slider-row">
+        <label>Ego speed (m/s)</label>
+        <input type="range" id="t-vego" min="1" max="30" value="15" oninput="calcTTC()">
+        <span class="sval" id="t-vego-v">15</span>
+      </div>
+      <div class="slider-row">
+        <label>Object speed (m/s)</label>
+        <input type="range" id="t-vobj" min="0" max="25" value="5" oninput="calcTTC()">
+        <span class="sval" id="t-vobj-v">5</span>
+      </div>
+      <div class="slider-row">
+        <label>Gap (m)</label>
+        <input type="range" id="t-gap" min="5" max="100" value="30" oninput="calcTTC()">
+        <span class="sval" id="t-gap-v">30</span>
+      </div>
+      <div class="slider-row">
+        <label>Max decel (m/s²)</label>
+        <input type="range" id="t-amax" min="1" max="10" value="4" step="0.5" oninput="calcTTC()">
+        <span class="sval" id="t-amax-v">4.0</span>
+      </div>
+      <div id="ttc-result" class="result-display res-safe">—</div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-chip"><div class="label">Perspective</div><div class="val">Urgency</div></div>
+      <div class="info-chip"><div class="label">Scenario</div><div class="val">Planned speed</div></div>
+      <div class="info-chip"><div class="label">Typical threshold</div><div class="val">TTC &lt; 1.5 s</div></div>
+      <div class="info-chip"><div class="label">Combined with</div><div class="val">PET near-miss check</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ RSS ═══════════════ -->
+<div id="panel-rss" class="panel">
+  <div class="card">
+    <div class="card-title" style="color:var(--accent-rss)">
+      <span class="badge" style="background:#4ade8030;color:var(--accent-rss)">RSS</span>
+      Responsibility-Sensitive Safety
+    </div>
+    <p style="color:var(--muted);font-size:0.88rem;line-height:1.7">
+      RSS (Intel, 2017) defines a <strong style="color:var(--text)">formal mathematical model of safe distances</strong>.
+      In the collision-checking context: <em>"If an object in the ego's passage area suddenly performs maximum braking, can the ego stop before hitting it?"</em>
+      RSS assumes <strong style="color:var(--accent-rss)">worst-case behavior</strong> of the object — no cooperation assumed.
+    </p>
+    <div class="formula-box" style="border-color:var(--accent-rss)">
+      <div style="color:var(--accent-rss);font-size:0.78rem;font-weight:700;margin-bottom:8px">SAFE LONGITUDINAL DISTANCE</div>
+      \[ d_{safe} = v_{ego} \cdot \rho + \frac{v_{ego}^2}{2 a_{min,ego}} - \frac{v_{obj}^2}{2 a_{max,obj}} \]
+      <div style="color:var(--muted);font-size:0.8rem;margin-top:8px">
+        \(\rho\): reaction time &nbsp;|&nbsp;
+        \(a_{min,ego}\): ego's min braking &nbsp;|&nbsp;
+        \(a_{max,obj}\): object's max braking (worst case)<br>
+        <strong style="color:#f87171">Unsafe</strong> if \(d_{gap} &lt; d_{safe}\)
+      </div>
+    </div>
+    <div class="road-wrap">
+      <svg width="560" height="120" viewBox="0 0 560 120">
+        <rect x="0" y="35" width="560" height="55" fill="#1e2235" rx="4"/>
+        <line x1="0" y1="62" x2="560" y2="62" stroke="#3a3f5c" stroke-width="1" stroke-dasharray="20,12"/>
+        <!-- Ego -->
+        <rect x="20" y="43" width="70" height="32" fill="#4ade80" rx="5"/>
+        <text x="55" y="63" fill="#0f1117" font-size="10" text-anchor="middle" font-weight="bold">EGO</text>
+        <!-- Reaction distance -->
+        <rect x="92" y="35" width="90" height="55" fill="#fbbf2415" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="137" y="30" fill="#fbbf24" font-size="9" text-anchor="middle">ρ·v_ego</text>
+        <!-- Ego braking distance -->
+        <rect x="182" y="35" width="130" height="55" fill="#f8717115" stroke="#f87171" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="247" y="30" fill="#f87171" font-size="9" text-anchor="middle">v²/2a_ego</text>
+        <!-- Obj braking (subtract) -->
+        <rect x="312" y="35" width="80" height="55" fill="#4ade8015" stroke="#4ade80" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="352" y="30" fill="#4ade80" font-size="9" text-anchor="middle">−v²/2a_obj</text>
+        <!-- Object -->
+        <rect x="400" y="43" width="70" height="32" fill="#64748b" rx="5"/>
+        <text x="435" y="57" fill="white" font-size="9" text-anchor="middle" font-weight="bold">OBJ</text>
+        <text x="435" y="68" fill="#f87171" font-size="9" text-anchor="middle">SUDDEN STOP!</text>
+        <!-- d_safe brace -->
+        <line x1="92" y1="105" x2="392" y2="105" stroke="#4ade80" stroke-width="1.5"/>
+        <line x1="92" y1="100" x2="92" y2="110" stroke="#4ade80" stroke-width="1.5"/>
+        <line x1="392" y1="100" x2="392" y2="110" stroke="#4ade80" stroke-width="1.5"/>
+        <text x="242" y="118" fill="#4ade80" font-size="11" text-anchor="middle">d_safe (RSS minimum distance)</text>
+      </svg>
+    </div>
+
+    <div class="sim-section">
+      <div class="sim-title">🧮 Interactive RSS Safe Distance Calculator</div>
+      <div class="slider-row">
+        <label>Ego speed (m/s)</label>
+        <input type="range" id="r-vego" min="1" max="30" value="15" oninput="calcRSS()">
+        <span class="sval" id="r-vego-v">15</span>
+      </div>
+      <div class="slider-row">
+        <label>Object speed (m/s)</label>
+        <input type="range" id="r-vobj" min="0" max="25" value="0" oninput="calcRSS()">
+        <span class="sval" id="r-vobj-v">0</span>
+      </div>
+      <div class="slider-row">
+        <label>Reaction time ρ (s)</label>
+        <input type="range" id="r-rho" min="0.1" max="2" value="0.5" step="0.1" oninput="calcRSS()">
+        <span class="sval" id="r-rho-v">0.5</span>
+      </div>
+      <div class="slider-row">
+        <label>Ego min decel (m/s²)</label>
+        <input type="range" id="r-aego" min="1" max="10" value="4" step="0.5" oninput="calcRSS()">
+        <span class="sval" id="r-aego-v">4.0</span>
+      </div>
+      <div class="slider-row">
+        <label>Obj max decel (m/s²)</label>
+        <input type="range" id="r-aobj" min="1" max="10" value="8" step="0.5" oninput="calcRSS()">
+        <span class="sval" id="r-aobj-v">8.0</span>
+      </div>
+      <div class="slider-row">
+        <label>Actual gap (m)</label>
+        <input type="range" id="r-gap" min="5" max="100" value="30" oninput="calcRSS()">
+        <span class="sval" id="r-gap-v">30</span>
+      </div>
+      <div id="rss-result" class="result-display res-safe">—</div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-chip"><div class="label">Perspective</div><div class="val">Formal Safety</div></div>
+      <div class="info-chip"><div class="label">Assumption</div><div class="val">Worst-case object</div></div>
+      <div class="info-chip"><div class="label">Includes</div><div class="val">Reaction time ρ</div></div>
+      <div class="info-chip"><div class="label">Origin</div><div class="val">Intel (Shalev-Shwartz 2017)</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ COMPARE ═══════════════ -->
+<div id="panel-compare" class="panel">
+  <div class="card">
+    <div class="card-title">📊 Full Comparison Table</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Full Name</th>
+          <th>What it measures</th>
+          <th>Formula (simplified)</th>
+          <th>Assumption</th>
+          <th>Threshold</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag tag-kin">DRAC</span></td>
+          <td>Deceleration Rate to Avoid Collision</td>
+          <td>Required deceleration to avoid collision</td>
+          <td>\(\frac{(v_e - v_o)^2}{2d}\)</td>
+          <td>Both vehicles decelerate cooperatively</td>
+          <td>DRAC &lt; a_max_comfortable</td>
+          <td>Feasibility of cooperative avoidance</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-temp">PET</span></td>
+          <td>Post-Encroachment Time</td>
+          <td>Temporal gap at conflict zone</td>
+          <td>\(t_{clear} - t_{arrive}\)</td>
+          <td>Vehicles pass through same zone at different times</td>
+          <td>PET &gt; 1.5–3.0 s</td>
+          <td>Near-miss severity; used as margin in DRAC & TTC</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-urg">TTC</span></td>
+          <td>Time to Collision</td>
+          <td>Time until collision at current speeds</td>
+          <td>\(\frac{d}{v_e - v_o}\)</td>
+          <td>Constant speeds maintained (planned speed)</td>
+          <td>TTC &gt; 1.5–2.0 s</td>
+          <td>Urgency of collision risk; near-miss within braking dist</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-safe">RSS</span></td>
+          <td>Responsibility-Sensitive Safety</td>
+          <td>Minimum safe following distance</td>
+          <td>\(v\rho + \frac{v^2}{2a_e} - \frac{v_o^2}{2a_o}\)</td>
+          <td>Object performs worst-case sudden stop</td>
+          <td>d_gap &gt; d_safe</td>
+          <td>Formal safety guarantee; ego must stop before collision</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔗 Combination Logic in Collision Checking</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Check</th>
+          <th>Metrics Combined</th>
+          <th>Question Asked</th>
+          <th>Risk Scenario</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong style="color:var(--accent-drac)">DRAC + PET</strong></td>
+          <td>DRAC feasibility + PET margin</td>
+          <td>Can both vehicles decelerate enough to maintain PET margin?</td>
+          <td>Intersection crossing, merging, cooperative avoidance</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--accent-ttc)">TTC + PET</strong></td>
+          <td>TTC urgency + PET near-miss</td>
+          <td>At planned speed, does a near-miss occur within braking distance?</td>
+          <td>Highway following, cut-in scenarios, planned trajectory risk</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--accent-rss)">RSS</strong></td>
+          <td>RSS safe distance (standalone)</td>
+          <td>If object suddenly stops, can ego stop before collision?</td>
+          <td>Pedestrian sudden stop, lead vehicle emergency brake</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚖️ Key Philosophical Differences</div>
+    <div class="grid2">
+      <div style="background:#12151f;border-radius:10px;padding:14px">
+        <div style="color:var(--accent-drac);font-weight:700;margin-bottom:6px">DRAC+PET — Cooperative</div>
+        <p style="color:var(--muted);font-size:0.82rem;line-height:1.6">
+          Assumes <em>both</em> agents act rationally and decelerate. Models the <strong>best-case avoidance scenario</strong>. If DRAC exceeds comfortable deceleration, even cooperative braking cannot avoid collision.
+        </p>
+      </div>
+      <div style="background:#12151f;border-radius:10px;padding:14px">
+        <div style="color:var(--accent-ttc);font-weight:700;margin-bottom:6px">TTC+PET — Predictive</div>
+        <p style="color:var(--muted);font-size:0.82rem;line-height:1.6">
+          Assumes <em>no action taken</em> — constant speeds. Models the <strong>extrapolated future</strong>. Checks whether the planned trajectory leads to a near-miss that cannot be avoided by braking alone.
+        </p>
+      </div>
+      <div style="background:#12151f;border-radius:10px;padding:14px">
+        <div style="color:var(--accent-rss);font-weight:700;margin-bottom:6px">RSS — Worst-Case Formal</div>
+        <p style="color:var(--muted);font-size:0.82rem;line-height:1.6">
+          Assumes the <em>object behaves adversarially</em> (max braking). Models the <strong>worst-case scenario</strong>. Provides a provable safety guarantee — if d_gap ≥ d_safe, ego can always stop.
+        </p>
+      </div>
+      <div style="background:#12151f;border-radius:10px;padding:14px">
+        <div style="color:var(--accent-pet);font-weight:700;margin-bottom:6px">PET — Observational</div>
+        <p style="color:var(--muted);font-size:0.82rem;line-height:1.6">
+          Originally a <em>post-hoc traffic safety metric</em> (from video analysis). In AV context, used as a <strong>temporal safety margin</strong> to define how close a near-miss is acceptable.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentActive = 'active-drac';
+  function showPanel(id, btn, cls) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.remove('active-drac','active-pet','active-ttc','active-rss');
+    });
+    btn.classList.add(cls);
+  }
+
+  function calcDRAC() {
+    const ve = +document.getElementById('d-vego').value;
+    const vo = +document.getElementById('d-vobj').value;
+    const gap = +document.getElementById('d-gap').value;
+    const amax = +document.getElementById('d-amax').value;
+    document.getElementById('d-vego-v').textContent = ve;
+    document.getElementById('d-vobj-v').textContent = vo;
+    document.getElementById('d-gap-v').textContent = gap;
+    document.getElementById('d-amax-v').textContent = amax.toFixed(1);
+    const el = document.getElementById('drac-result');
+    if (ve <= vo) { el.className='result-display res-safe'; el.textContent='v_ego ≤ v_obj — No closing speed, no collision risk'; return; }
+    const drac = (ve - vo) ** 2 / (2 * gap);
+    el.className = 'result-display ' + (drac < amax * 0.7 ? 'res-safe' : drac < amax ? 'res-warn' : 'res-danger');
+    el.textContent = `DRAC = ${drac.toFixed(2)} m/s²  |  a_max = ${amax} m/s²  →  ${drac < amax ? '✅ Avoidable by cooperative braking' : '❌ Cannot avoid even with max braking!'}`;
+  }
+
+  function calcTTC() {
+    const ve = +document.getElementById('t-vego').value;
+    const vo = +document.getElementById('t-vobj').value;
+    const gap = +document.getElementById('t-gap').value;
+    const amax = +document.getElementById('t-amax').value;
+    document.getElementById('t-vego-v').textContent = ve;
+    document.getElementById('t-vobj-v').textContent = vo;
+    document.getElementById('t-gap-v').textContent = gap;
+    document.getElementById('t-amax-v').textContent = amax.toFixed(1);
+    const el = document.getElementById('ttc-result');
+    if (ve <= vo) { el.className='result-display res-safe'; el.textContent='v_ego ≤ v_obj — No closing speed'; return; }
+    const ttc = gap / (ve - vo);
+    const dbrake = ve * ve / (2 * amax);
+    const withinBrake = gap <= dbrake;
+    const risk = ttc < 1.5 && withinBrake;
+    el.className = 'result-display ' + (ttc > 3 ? 'res-safe' : ttc > 1.5 ? 'res-warn' : 'res-danger');
+    el.textContent = `TTC = ${ttc.toFixed(2)} s  |  d_brake = ${dbrake.toFixed(1)} m  |  gap within brake dist: ${withinBrake?'YES':'NO'}  →  ${risk ? '❌ Near-miss risk within braking distance!' : ttc < 1.5 ? '⚠️ Low TTC but outside braking distance' : '✅ Safe TTC'}`;
+  }
+
+  function calcRSS() {
+    const ve = +document.getElementById('r-vego').value;
+    const vo = +document.getElementById('r-vobj').value;
+    const rho = +document.getElementById('r-rho').value;
+    const ae = +document.getElementById('r-aego').value;
+    const ao = +document.getElementById('r-aobj').value;
+    const gap = +document.getElementById('r-gap').value;
+    document.getElementById('r-vego-v').textContent = ve;
+    document.getElementById('r-vobj-v').textContent = vo;
+    document.getElementById('r-rho-v').textContent = rho.toFixed(1);
+    document.getElementById('r-aego-v').textContent = ae.toFixed(1);
+    document.getElementById('r-aobj-v').textContent = ao.toFixed(1);
+    document.getElementById('r-gap-v').textContent = gap;
+    const dsafe = ve * rho + ve * ve / (2 * ae) - vo * vo / (2 * ao);
+    const el = document.getElementById('rss-result');
+    const margin = gap - dsafe;
+    el.className = 'result-display ' + (margin > 5 ? 'res-safe' : margin > 0 ? 'res-warn' : 'res-danger');
+    el.textContent = `d_safe = ${dsafe.toFixed(2)} m  |  actual gap = ${gap} m  |  margin = ${margin.toFixed(2)} m  →  ${gap >= dsafe ? '✅ RSS Safe: ego can stop before collision' : '❌ RSS Unsafe: collision unavoidable if object stops now!'}`;
+  }
+
+  // Init
+  calcDRAC(); calcTTC(); calcRSS();
+</script>
+</body>
+</html>
