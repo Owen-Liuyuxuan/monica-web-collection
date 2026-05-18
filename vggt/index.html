@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feed-Forward 3D Reconstruction: A Deep Technical Survey</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--d:#e74c3c;--v:#3498db;--a:#2ecc71;--o:#9b59b6;--bg:#0d1117;--c1:#161b22;--c2:#1c2128;--br:#30363d;--tp:#e6edf3;--ts:#8b949e;--tm:#6e7681;--ac:#58a6ff;--ok:#3fb950;--wn:#d29922}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--tp);line-height:1.7;font-size:15px}
+.hero{background:linear-gradient(135deg,#0d1117,#161b22,#1a1f2e);border-bottom:1px solid var(--br);padding:56px 40px 46px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(88,166,255,.07),transparent 60%),radial-gradient(ellipse at 70% 30%,rgba(155,89,182,.07),transparent 60%);pointer-events:none}
+.badge{display:inline-block;background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.3);color:var(--ac);padding:4px 14px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:18px}
+.hero h1{font-size:2.4em;font-weight:800;background:linear-gradient(135deg,#e6edf3,#58a6ff,#a5d6ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:14px;line-height:1.2}
+.hero-sub{font-size:1em;color:var(--ts);max-width:680px;margin:0 auto 24px}
+.pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.pill{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid}
+.p1{background:rgba(231,76,60,.15);border-color:rgba(231,76,60,.4);color:#ff7b6b}
+.p2{background:rgba(52,152,219,.15);border-color:rgba(52,152,219,.4);color:#74b9ff}
+.p3{background:rgba(46,204,113,.15);border-color:rgba(46,204,113,.4);color:#55efc4}
+.p4{background:rgba(155,89,182,.15);border-color:rgba(155,89,182,.4);color:#d6a4ff}
+.nav{background:var(--c1);border-bottom:1px solid var(--br);padding:0 40px;position:sticky;top:0;z-index:100;display:flex;justify-content:center;overflow-x:auto}
+.nav a{color:var(--ts);text-decoration:none;padding:13px 15px;font-size:12.5px;font-weight:500;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s}
+.nav a:hover{color:var(--tp);border-bottom-color:var(--ac)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 36px}
+.sec{padding:52px 0;border-bottom:1px solid var(--br)}
+.sec:last-child{border-bottom:none}
+h2.st{font-size:1.7em;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+h2.st .ico{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;background:rgba(88,166,255,.12)}
+.sdesc{color:var(--ts);margin-bottom:30px;font-size:1em;max-width:800px}
+h3{font-size:1.1em;font-weight:600;color:var(--tp);margin:24px 0 9px}
+p{color:var(--ts);margin-bottom:11px}
+.phead{display:flex;align-items:center;gap:14px;padding:18px 22px;border-radius:12px;margin-bottom:26px}
+.ph1{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.25)}
+.ph2{background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.25)}
+.ph3{background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.25)}
+.ph4{background:rgba(155,89,182,.08);border:1px solid rgba(155,89,182,.25)}
+.pnum{font-size:2.4em;font-weight:900;opacity:.14;line-height:1}
+.ptitle{font-size:1.28em;font-weight:800}
+.pmeta{font-size:.78em;color:var(--tm);margin-top:2px}
+.ptag{font-size:.86em;color:var(--ts);margin-top:4px;font-style:italic}
+/* TIMELINE */
+.tl{position:relative;padding:16px 0}
+.tl::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--d),var(--v),var(--a),var(--o));transform:translateX(-50%)}
+.tli{display:flex;align-items:flex-start;margin-bottom:44px;position:relative}
+.tli:nth-child(odd){flex-direction:row}
+.tli:nth-child(even){flex-direction:row-reverse}
+.tlc{width:calc(50% - 36px);background:var(--c1);border:1px solid var(--br);border-radius:12px;padding:20px;transition:border-color .2s}
+.tlc:hover{border-color:var(--ac)}
+.tli:nth-child(odd) .tlc{margin-right:36px}
+.tli:nth-child(even) .tlc{margin-left:36px}
+.tldot{position:absolute;left:50%;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;border:3px solid var(--bg);z-index:2;top:20px}
+.tlyear{font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;opacity:.8}
+.tltitle{font-size:1.18em;font-weight:700;margin-bottom:5px}
+.tltag{font-size:.84em;color:var(--ts);margin-bottom:9px;font-style:italic}
+.tlpts{list-style:none}
+.tlpts li{font-size:.81em;color:var(--ts);padding:2px 0 2px 15px;position:relative}
+.tlpts li::before{content:'→';position:absolute;left:0;color:var(--tm)}
+/* ARCH */
+.arch{background:var(--c2);border:1px solid var(--br);border-radius:12px;padding:24px;margin:16px 0;overflow-x:auto}
+.aflow{display:flex;align-items:center;min-width:580px;justify-content:center;flex-wrap:wrap;gap:4px}
+.ab{background:var(--c1);border:1px solid var(--br);border-radius:9px;padding:10px 14px;text-align:center;min-width:90px}
+.abt{font-size:.76em;font-weight:700;color:var(--tp)}
+.abs{font-size:.66em;color:var(--tm);margin-top:2px}
+.aarr{color:var(--tm);font-size:1.2em;padding:0 4px;flex-shrink:0}
+.hd{border-color:var(--d)!important;background:rgba(231,76,60,.08)!important}
+.hv{border-color:var(--v)!important;background:rgba(52,152,219,.08)!important}
+.h3c{border-color:var(--a)!important;background:rgba(46,204,113,.08)!important}
+.ho{border-color:var(--o)!important;background:rgba(155,89,182,.08)!important}
+/* FORMULA */
+.fbox{background:var(--c2);border:1px solid var(--br);border-left:3px solid var(--ac);border-radius:0 8px 8px 0;padding:13px 17px;margin:13px 0}
+.flabel{font-size:.71em;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ac);margin-bottom:5px}
+.fbox p{margin:0;font-size:.84em}
+/* INSIGHT GRID */
+.igrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+@media(max-width:800px){.igrid{grid-template-columns:1fr}}
+.ibox{background:var(--c1);border:1px solid var(--br);border-radius:10px;padding:15px}
+.iico{font-size:22px;margin-bottom:6px}
+.ititle{font-size:.84em;font-weight:700;color:var(--tp);margin-bottom:4px}
+.itext{font-size:.77em;color:var(--ts)}
+/* STATS */
+.srow{display:flex;gap:11px;flex-wrap:wrap;margin:15px 0}
+.sc{background:var(--c1);border:1px solid var(--br);border-radius:10px;padding:13px 17px;flex:1;min-width:115px;text-align:center}
+.snum{font-size:1.75em;font-weight:800;line-height:1}
+.slabel{font-size:.71em;color:var(--tm);margin-top:3px}
+/* TABLE */
+.tw{overflow-x:auto;border-radius:10px;border:1px solid var(--br);margin:13px 0}
+table{width:100%;border-collapse:collapse;font-size:.83em}
+thead{background:var(--c2)}
+th{padding:10px 13px;text-align:left;font-weight:600;color:var(--ts);font-size:.76em;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--br)}
+td{padding:9px 13px;border-bottom:1px solid rgba(48,54,61,.5);color:var(--ts);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(88,166,255,.03)}
+.best{color:var(--ok);font-weight:700}
+/* CALLOUT */
+.callout{border-radius:8px;padding:12px 16px;margin:15px 0;display:flex;gap:9px;align-items:flex-start}
+.ci{background:rgba(88,166,255,.08);border:1px solid rgba(88,166,255,.2)}
+.cw{background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.2)}
+.cs{background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.2)}
+.cico{font-size:1em;flex-shrink:0;margin-top:2px}
+.ctxt{font-size:.82em;color:var(--ts)}
+.ctxt strong{color:var(--tp)}
+/* CODE */
+.code{background:#010409;border:1px solid var(--br);border-radius:8px;padding:12px 16px;font-family:'SF Mono','Fira Code',monospace;font-size:.77em;color:#a5d6ff;overflow-x:auto;margin:9px 0;line-height:1.6;white-space:pre}
+.cc{color:#6e7681}
+/* REPR COMPARE */
+.rcomp{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:15px 0}
+@media(max-width:800px){.rcomp{grid-template-columns:1fr 1fr}}
+.rcard{background:var(--c2);border:1px solid var(--br);border-radius:10px;padding:12px;text-align:center}
+.rico{font-size:1.6em;margin-bottom:5px}
+.rname{font-size:.78em;font-weight:700;color:var(--tp);margin-bottom:3px}
+.rdesc{font-size:.68em;color:var(--tm)}
+.rtag{font-size:.66em;margin-top:5px;padding:2px 7px;border-radius:4px;display:inline-block}
+/* CHART */
+.cw2{background:var(--c1);border:1px solid var(--br);border-radius:12px;padding:20px;margin:16px 0}
+.ct{font-size:.84em;font-weight:600;color:var(--ts);margin-bottom:12px;text-align:center}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:800px){.g2{grid-template-columns:1fr}}
+/* PIPELINE */
+.pipeline{display:flex;flex-direction:column;gap:7px;margin:13px 0}
+.ps{display:flex;align-items:flex-start;gap:11px;background:var(--c1);border:1px solid var(--br);border-radius:8px;padding:10px 13px}
+.pn{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.76em;font-weight:700;flex-shrink:0;margin-top:1px}
+.pt{font-size:.81em;color:var(--ts)}
+.pt strong{color:var(--tp)}
+/* COMPARISON MATRIX */
+.mx-wrap{overflow-x:auto;margin:15px 0}
+.mx{display:grid;grid-template-columns:2fr repeat(4,1fr);gap:2px;min-width:580px}
+.mh{background:var(--c2);padding:8px 7px;text-align:center;font-size:.71em;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:.3px;border-radius:4px}
+.mc{background:var(--c1);padding:8px 7px;text-align:center;font-size:.76em;color:var(--ts);border-radius:4px;display:flex;align-items:center;justify-content:center;gap:3px}
+.ml{background:var(--c1);padding:8px 10px;font-size:.76em;color:var(--ts);border-radius:4px;font-weight:500}
+.dg{width:7px;height:7px;border-radius:50%;background:var(--ok);flex-shrink:0}
+.dy{width:7px;height:7px;border-radius:50%;background:var(--wn);flex-shrink:0}
+.dr{width:7px;height:7px;border-radius:50%;background:#6e7681;flex-shrink:0}
+/* FOOTER */
+.footer{background:var(--c1);border-top:1px solid var(--br);padding:24px 40px;text-align:center;color:var(--tm);font-size:.78em}
+/* PROGRESS BAR */
+.pb-wrap{margin:5px 0}
+.pb-label{display:flex;justify-content:space-between;font-size:.76em;color:var(--ts);margin-bottom:3px}
+.pb{height:5px;background:var(--br);border-radius:3px;overflow:hidden}
+.pb-fill{height:100%;border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="badge">📐 Deep Technical Survey · 2023–2025</div>
+  <h1>Feed-Forward 3D Reconstruction<br>From Pairs to Billions of Parameters</h1>
+  <p class="hero-sub">A comprehensive technical analysis tracing the paradigm shift from brittle SfM/MVS pipelines to unified neural feed-forward reconstruction — from DUSt3R through VGGT, Depth Anything 3, to VGGT-Ω.</p>
+  <div class="pills">
+    <span class="pill p1">📄 DUSt3R · Dec 2023</span>
+    <span class="pill p2">📄 VGGT · Mar 2025</span>
+    <span class="pill p3">📄 Depth Anything 3 · Nov 2024</span>
+    <span class="pill p4">📄 VGGT-Ω · May 2025</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="#overview">Overview</a>
+  <a href="#timeline">Development Trace</a>
+  <a href="#dust3r">DUSt3R</a>
+  <a href="#vggt">VGGT</a>
+  <a href="#da3">Depth Anything 3</a>
+  <a href="#omega">VGGT-Ω</a>
+  <a href="#comparison">Comparison</a>
+  <a href="#insights">Key Insights</a>
+</nav>
+
+<div class="wrap">
+
+<!-- ===== OVERVIEW ===== -->
+<section class="sec" id="overview">
+  <h2 class="st"><span class="ico">🗺️</span> The Big Picture: A Paradigm Shift in 3D Vision</h2>
+  <p class="sdesc">For decades, 3D reconstruction relied on a brittle multi-stage pipeline. These four papers collectively dismantle and replace it with a single neural forward pass, each motivated by the limitations of its predecessor.</p>
+
+  <h3>The Old World: Traditional SfM/MVS Pipeline</h3>
+  <div class="arch">
+    <div class="aflow">
+      <div class="ab"><div class="abt">📷 Images</div><div class="abs">Raw RGB</div></div>
+      <div class="aarr">→</div>
+      <div class="ab"><div class="abt">🔍 Keypoints</div><div class="abs">SIFT/SuperPoint</div></div>
+      <div class="aarr">→</div>
+      <div class="ab"><div class="abt">🔗 Matching</div><div class="abs">NN + RANSAC</div></div>
+      <div class="aarr">→</div>
+      <div class="ab"><div class="abt">📐 SfM</div><div class="abs">Bundle Adjust</div></div>
+      <div class="aarr">→</div>
+      <div class="ab"><div class="abt">🏔️ MVS</div><div class="abs">Dense Depth</div></div>
+      <div class="aarr">→</div>
+      <div class="ab"><div class="abt">☁️ Point Cloud</div><div class="abs">3D Output</div></div>
+    </div>
+    <p style="text-align:center;margin-top:10px;font-size:.76em;color:var(--tm)">⚠️ Each stage can fail independently · Requires calibrated cameras · Slow (minutes–hours) · Brittle in low-texture or dynamic scenes</p>
+  </div>
+
+  <h3>The New World: Feed-Forward Neural Reconstruction</h3>
+  <div class="arch">
+    <div class="aflow">
+      <div class="ab"><div class="abt">📷 N Images</div><div class="abs">Any, uncalibrated</div></div>
+      <div class="aarr">→</div>
+      <div class="ab hv" style="min-width:190px"><div class="abt">🧠 Neural Foundation Model</div><div class="abs">Single forward pass · &lt;1 second</div></div>
+      <div class="aarr">→</div>
+      <div class="ab" style="min-width:150px"><div class="abt">🎯 All Outputs</div><div class="abs">Poses + Depth + Points + Tracks</div></div>
+    </div>
+    <p style="text-align:center;margin-top:10px;font-size:.76em;color:var(--ok)">✓ End-to-end · No calibration needed · Sub-second inference · Handles low-texture, dynamic, in-the-wild scenes</p>
+  </div>
+
+  <h3>Evolution of 3D Representations</h3>
+  <div class="rcomp">
+    <div class="rcard">
+      <div class="rico">🗺️</div>
+      <div class="rname">Point Map (PCD)</div>
+      <div class="rdesc">Each pixel → absolute 3D XYZ in camera-1 frame. Dense, direct, but scale-entangled with camera model.</div>
+      <div class="rtag" style="background:rgba(231,76,60,.15);color:#ff7b6b">DUSt3R · VGGT</div>
+    </div>
+    <div class="rcard">
+      <div class="rico">📏</div>
+      <div class="rname">Depth Map</div>
+      <div class="rdesc">Per-pixel Z value. Compact, well-studied, but loses direction info without explicit camera model.</div>
+      <div class="rtag" style="background:rgba(52,152,219,.15);color:#74b9ff">All models</div>
+    </div>
+    <div class="rcard">
+      <div class="rico">🧭</div>
+      <div class="rname">Ray Map</div>
+      <div class="rdesc">Per-pixel unit direction vector in world space. Encodes camera orientation implicitly per pixel.</div>
+      <div class="rtag" style="background:rgba(46,204,113,.15);color:#55efc4">DA3</div>
+    </div>
+    <div class="rcard">
+      <div class="rico">🎯</div>
+      <div class="rname">Depth + Ray</div>
+      <div class="rdesc">P = D·R + O. Minimal, decouples structure from motion. DA3's key insight — ablation-proven best.</div>
+      <div class="rtag" style="background:rgba(46,204,113,.15);color:#55efc4">DA3 (Best)</div>
+    </div>
+  </div>
+
+  <div class="callout ci">
+    <span class="cico">💡</span>
+    <div class="ctxt"><strong>Key Philosophical Tension:</strong> These papers debate whether 3D reconstruction needs specialized geometric inductive biases (DUSt3R's cross-attention decoder, VGGT's alternating attention) or whether a plain pretrained transformer with the right prediction target suffices (DA3's minimalist thesis). VGGT-Ω resolves this empirically: at 10B parameters and 4M sequences, <em>scale dominates architecture choices</em> — but architecture still matters for efficiency.</div>
+  </div>
+</section>
+
+<!-- ===== TIMELINE ===== -->
+<section class="sec" id="timeline">
+  <h2 class="st"><span class="ico">📅</span> Development Trace: Intellectual Lineage</h2>
+  <p class="sdesc">Each paper is a direct response to the limitations of its predecessor. Understanding the motivation chain is essential to appreciating the technical choices made in each work.</p>
+
+  <div class="tl">
+    <!-- DUSt3R -->
+    <div class="tli">
+      <div class="tlc" style="border-color:rgba(231,76,60,.3)">
+        <div class="tlyear" style="color:var(--d)">DEC 2023 · Aalto University / Naver Labs Europe</div>
+        <div class="tltitle" style="color:#ff7b6b">DUSt3R</div>
+        <div class="tltag">"What if we just regress 3D points directly?"</div>
+        <ul class="tlpts">
+          <li><strong>Problem:</strong> Traditional SfM is brittle, slow, requires calibrated cameras. Each stage can fail independently.</li>
+          <li><strong>Key Idea:</strong> Predict pointmaps (dense pixel→3D maps) from image pairs using CroCo-based transformer with cross-attention decoder.</li>
+          <li><strong>Limitation:</strong> Pairwise only — needs global alignment post-processing for N views. No direct camera pose output. Scale ambiguity.</li>
+          <li><strong>Impact:</strong> Proved the concept. Spawned an entire research direction. SOTA on CO3Dv2 (RRA@15: 96.2).</li>
+        </ul>
+      </div>
+      <div class="tldot" style="background:var(--d)"></div>
+    </div>
+    <!-- VGGT -->
+    <div class="tli">
+      <div class="tlc" style="border-color:rgba(52,152,219,.3)">
+        <div class="tlyear" style="color:var(--v)">MAR 2025 · Oxford VGG / Meta AI</div>
+        <div class="tltitle" style="color:#74b9ff">VGGT</div>
+        <div class="tltag">"Scale to N views, predict everything in one pass"</div>
+        <ul class="tlpts">
+          <li><strong>Problem:</strong> DUSt3R's pairwise constraint is artificial. Global alignment post-processing is slow and suboptimal.</li>
+          <li><strong>Key Idea:</strong> Alternating-Attention (AA) transformer handles arbitrary N views natively. Multi-task head predicts cameras, depth, point maps, AND tracks simultaneously.</li>
+          <li><strong>Limitation:</strong> 1.2B params, quadratic attention cost. Specialized architecture may not leverage monocular pretraining as well as DA3.</li>
+          <li><strong>Impact:</strong> New SOTA. AUC@30 on Re10K: 85.3 (feed-fwd), 93.5 (with BA). Demonstrated multi-task synergy.</li>
+        </ul>
+      </div>
+      <div class="tldot" style="background:var(--v)"></div>
+    </div>
+    <!-- DA3 -->
+    <div class="tli">
+      <div class="tlc" style="border-color:rgba(46,204,113,.3)">
+        <div class="tlyear" style="color:var(--a)">NOV 2024 / 2025 · Depth Anything Team</div>
+        <div class="tltitle" style="color:#55efc4">Depth Anything 3</div>
+        <div class="tltag">"Do we really need all that architectural complexity?"</div>
+        <ul class="tlpts">
+          <li><strong>Problem:</strong> VGGT uses a specialized architecture. DA2 excels at monocular depth. Can a single pretrained DINOv2 ViT match or beat VGGT with minimal modification?</li>
+          <li><strong>Key Idea:</strong> Depth + Ray is a sufficient representation. No point maps, no tracking heads. Teacher-student distillation for real-world data quality.</li>
+          <li><strong>Limitation:</strong> Smaller training scale than VGGT-Ω. No explicit dynamic scene handling in base model.</li>
+          <li><strong>Impact:</strong> Beat VGGT by 35.7% on camera pose, 23.6% on geometry. DA3-Giant (1.1B) beats VGGT (1.19B) with fewer params.</li>
+        </ul>
+      </div>
+      <div class="tldot" style="background:var(--a)"></div>
+    </div>
+    <!-- VGGT-Omega -->
+    <div class="tli">
+      <div class="tlc" style="border-color:rgba(155,89,182,.3)">
+        <div class="tlyear" style="color:var(--o)">MAY 2025 · Oxford VGG / Meta AI</div>
+        <div class="tltitle" style="color:#d6a4ff">VGGT-Ω</div>
+        <div class="tltag">"Scaling laws apply to 3D reconstruction too"</div>
+        <ul class="tlpts">
+          <li><strong>Problem:</strong> DA3 showed minimalism wins at ~1B params. But what happens at 10B? Can we handle dynamic scenes? How do we scale data efficiently?</li>
+          <li><strong>Key Idea:</strong> Register Attention (efficient global communication via 16 scene tokens), DINOv3 init, 4M sequence dataset, self-supervised momentum teacher. Scale 200M→10B.</li>
+          <li><strong>Limitation:</strong> Massive compute (128 H100s). MLP-only heads produce blocky artifacts in outdoor scenes.</li>
+          <li><strong>Impact:</strong> Clear power-law scaling. Beat DA3 on dynamic scenes (Sintel AUC@3°: +77%). Registers enable robotics VLA and language alignment.</li>
+        </ul>
+      </div>
+      <div class="tldot" style="background:var(--o)"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DUSt3R ===== -->
+<section class="sec" id="dust3r">
+  <div class="phead ph1">
+    <div class="pnum" style="color:var(--d)">01</div>
+    <div>
+      <div class="ptitle" style="color:#ff7b6b">DUSt3R: Geometric 3D Vision Made Easy</div>
+      <div class="pmeta">arXiv:2312.14132 · Aalto University & Naver Labs Europe · Dec 2023</div>
+      <div class="ptag">"Cast 3D reconstruction as dense pointmap regression — no calibration, no poses, no problem."</div>
+    </div>
+  </div>
+
+  <h3>Core Philosophical Contribution</h3>
+  <p>DUSt3R's genius lies in its <strong>representation choice</strong>. Rather than predicting camera parameters and then computing 3D structure (the classical approach), it directly predicts where each pixel <em>is</em> in 3D space. This sidesteps all intermediate failure modes. The critical insight: if you express both images' pointmaps in the same coordinate frame, relative pose is <em>implicitly encoded</em> — you never need to predict it explicitly.</p>
+
+  <div class="fbox">
+    <div class="flabel">The Pointmap Representation</div>
+    <p>For image pair (I₁, I₂), predict two pointmaps <strong>X₁,₁</strong> and <strong>X₂,₁</strong> — both expressed in camera-1's coordinate frame.<br>
+    Each pixel (i,j) in image Iᵥ maps to a 3D point Xᵥ,₁ᵢ,ⱼ ∈ ℝ³.<br><br>
+    <strong>Key insight:</strong> Expressing both maps in the same frame implicitly encodes relative pose. Downstream tasks (matching, intrinsics, depth) are all free derivations from this single output.</p>
+  </div>
+
+  <h3>Architecture: CroCo-Based Siamese Encoder + Cross-Attention Decoder</h3>
+  <div class="arch">
+    <div class="g2" style="min-width:480px">
+      <div>
+        <p style="text-align:center;font-size:.76em;color:var(--tm);margin-bottom:5px">Image I₁</p>
+        <div class="ab hd" style="text-align:center;margin-bottom:7px;padding:10px"><div class="abt">ViT Encoder (shared)</div><div class="abs">Siamese · DINOv2-style · ViT-Large</div></div>
+        <div class="ab" style="text-align:center;border-color:#555"><div class="abt">Tokens F₁</div><div class="abs">H'×W'×C</div></div>
+      </div>
+      <div>
+        <p style="text-align:center;font-size:.76em;color:var(--tm);margin-bottom:5px">Image I₂</p>
+        <div class="ab hd" style="text-align:center;margin-bottom:7px;padding:10px"><div class="abt">ViT Encoder (shared)</div><div class="abs">Siamese · DINOv2-style · ViT-Large</div></div>
+        <div class="ab" style="text-align:center;border-color:#555"><div class="abt">Tokens F₂</div><div class="abs">H'×W'×C</div></div>
+      </div>
+    </div>
+    <p style="text-align:center;margin:12px 0;color:var(--tm);font-size:.83em">↓ Cross-Attention Decoder (ViT-Base) — constant cross-attention between branches ↓</p>
+    <div class="g2">
+      <div class="ab hd" style="text-align:center"><div class="abt">DPT Head → X₁,₁</div><div class="abs">Pointmap in cam-1 frame + Confidence C₁</div></div>
+      <div class="ab hd" style="text-align:center"><div class="abt">DPT Head → X₂,₁</div><div class="abs">Pointmap in cam-1 frame + Confidence C₂</div></div>
+    </div>
+    <p style="text-align:center;margin-top:9px;font-size:.74em;color:var(--tm)">Trained at 224px then 512px · ~40ms inference per pair on H100 · 8.5M training pairs from 8 datasets</p>
+  </div>
+
+  <h3>Training: Confidence-Weighted Regression Loss</h3>
+  <p>The key training innovation is a confidence-aware loss that forces the model to be both accurate and calibrated. It learns to output high confidence where it can be accurate, and low confidence in ambiguous regions (sky, transparent surfaces, reflections).</p>
+  <div class="code"><span class="cc"># Confidence-aware regression loss (simplified)</span>
+<span class="cc"># C_v: predicted confidence per pixel (scalar field, learned)</span>
+<span class="cc"># alpha: regularization weight to prevent trivial C_v → 0</span>
+L_conf = Σ_v Σ_i [ C_v_i · dist(X_pred_i, X_gt_i) − α · log(C_v_i) ]
+
+<span class="cc"># Intuition: high C_v penalizes errors more heavily</span>
+<span class="cc"># log term prevents collapse (C_v → 0 would make loss trivially 0)</span>
+<span class="cc"># Net effect: model learns accuracy AND uncertainty calibration jointly</span></div>
+
+  <h3>Multi-View Global Alignment (N > 2 Images)</h3>
+  <p>For N images, DUSt3R builds a connectivity graph G(V,E) where edges represent overlapping pairs. Instead of traditional Bundle Adjustment (2D reprojection error), it optimizes directly in 3D space — faster convergence, no calibration needed:</p>
+  <div class="fbox">
+    <div class="flabel">3D Global Alignment Objective</div>
+    <p>χ* = argmin<sub>χ,P,σ</sub> Σ<sub>e∈E</sub> Σ<sub>v∈e</sub> Σ<sub>i</sub> C<sup>i</sup><sub>v,e</sub> · ||χ<sup>i</sup><sub>v</sub> − σ<sub>e</sub> P<sub>e</sub> X<sup>i</sup><sub>v,e</sub>||<br><br>
+    Optimizes camera poses (P<sub>e</sub>), scene points (χ), and scale factors (σ<sub>e</sub>) directly in 3D. Faster than BA. Converges in seconds via gradient descent on GPU.</p>
+  </div>
+
+  <h3>Downstream Capabilities (All Derived from Pointmaps — No Extra Training)</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Task</th><th>Method of Recovery</th><th>Calibration Needed?</th></tr></thead>
+      <tbody>
+        <tr><td>Point Matching</td><td>Nearest neighbor search in 3D pointmap space</td><td>❌ No</td></tr>
+        <tr><td>Camera Intrinsics</td><td>Solve for focal length f minimizing pixel-ray vs 3D point difference</td><td>❌ No</td></tr>
+        <tr><td>Relative Pose</td><td>Procrustes alignment or PnP-RANSAC on pointmaps</td><td>❌ No</td></tr>
+        <tr><td>Depth Maps</td><td>Z-coordinate of pointmap directly</td><td>❌ No</td></tr>
+        <tr><td>Visual Localization</td><td>PnP-RANSAC between query and reference pointmap</td><td>❌ No</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="srow">
+    <div class="sc"><div class="snum" style="color:var(--d)">8.5M</div><div class="slabel">Training image pairs (8 datasets)</div></div>
+    <div class="sc"><div class="snum" style="color:var(--d)">40ms</div><div class="slabel">Pairwise inference (H100)</div></div>
+    <div class="sc"><div class="snum" style="color:var(--d)">96.2</div><div class="slabel">RRA@15 on CO3Dv2</div></div>
+    <div class="sc"><div class="snum" style="color:var(--d)">1.741</div><div class="slabel">DTU Chamfer Distance (mm)</div></div>
+  </div>
+</section>
+
+<!-- ===== VGGT ===== -->
+<section class="sec" id="vggt">
+  <div class="phead ph2">
+    <div class="pnum" style="color:var(--v)">02</div>
+    <div>
+      <div class="ptitle" style="color:#74b9ff">VGGT: Visual Geometry Grounded Transformer</div>
+      <div class="pmeta">arXiv:2503.11651 · Oxford VGG & Meta AI · Mar 2025</div>
+      <div class="ptag">"One transformer, N views, all outputs simultaneously — in under a second."</div>
+    </div>
+  </div>
+
+  <h3>Motivation: Breaking the Pairwise Bottleneck</h3>
+  <p>DUSt3R's pairwise constraint is artificial. Real scenes have N views, and fusing pairwise predictions via global alignment is slow and suboptimal. VGGT asks: can a single transformer process all N views simultaneously and output cameras, depth, point maps, AND point tracks all at once?</p>
+
+  <div class="callout ci">
+    <span class="cico">🔑</span>
+    <div class="ctxt"><strong>The Alternating-Attention Insight:</strong> Pure global self-attention across all tokens from all frames is computationally prohibitive (quadratic in total token count) and doesn't leverage natural image structure. Pure frame-wise attention cannot share information across views. The solution: <strong>alternate</strong> between the two — each layer specializes in either intra-frame normalization or inter-frame fusion. Ablation confirms: AA > global-only > cross-attention. The alternation allows the model to first build a coherent per-image representation, then fuse across views, then refine per-image again.</div>
+  </div>
+
+  <h3>Architecture: Alternating-Attention Transformer (1.2B params)</h3>
+  <div class="arch">
+    <div style="display:flex;flex-direction:column;gap:9px;align-items:center;min-width:500px">
+      <div style="display:flex;gap:9px;flex-wrap:wrap;justify-content:center">
+        <div class="ab" style="border-color:#555"><div class="abt">I₁ Patches</div><div class="abs">DINOv2 patchify</div></div>
+        <div class="ab" style="border-color:#555"><div class="abt">I₂ Patches</div><div class="abs">DINOv2 patchify</div></div>
+        <div style="display:flex;align-items:center;color:var(--tm)">···</div>
+        <div class="ab" style="border-color:#555"><div class="abt">Iₙ Patches</div><div class="abs">DINOv2 patchify</div></div>
+      </div>
+      <p style="font-size:.76em;color:var(--tm)">+ Camera Token (1/frame) + Register Tokens (4/frame) · No frame-index embeddings → permutation equivariant</p>
+      <div style="width:100%;background:var(--c1);border:1px solid var(--br);border-radius:8px;padding:13px">
+        <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap">
+          <div class="ab hv" style="min-width:140px"><div class="abt">Frame-wise Attention</div><div class="abs">Tokens attend within same image</div></div>
+          <div class="aarr">↔</div>
+          <div class="ab hv" style="min-width:140px"><div class="abt">Global Attention</div><div class="abs">All tokens across all frames</div></div>
+        </div>
+        <p style="text-align:center;margin-top:7px;font-size:.74em;color:var(--tm)">L=24 layers, alternating · 2–24 frames per scene during training · Max 518px resolution</p>
+      </div>
+      <div style="display:flex;gap:9px;flex-wrap:wrap;justify-content:center">
+        <div class="ab hv"><div class="abt">Camera Head</div><div class="abs">4 self-attn layers → R, t, FoV</div></div>
+        <div class="ab hv"><div class="abt">DPT Head</div><div class="abs">Depth + Point Maps + Uncertainty</div></div>
+        <div class="ab hv"><div class="abt">Tracking Head</div><div class="abs">CoTracker2-style 2D tracks</div></div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Multi-Task Loss: Synergistic Learning</h3>
+  <div class="fbox">
+    <div class="flabel">Combined Training Objective</div>
+    <p>L = L<sub>camera</sub> + L<sub>depth</sub> + L<sub>pmap</sub> + λ · L<sub>track</sub> &nbsp;&nbsp;(λ = 0.05)<br><br>
+    • <strong>L<sub>camera</sub>:</strong> Huber loss on rotation quaternions, translations, focal lengths<br>
+    • <strong>L<sub>depth</sub>:</strong> Aleatoric uncertainty loss + gradient consistency term for spatial smoothness<br>
+    • <strong>L<sub>pmap</sub>:</strong> Supervises 3D point maps derived from depth + cameras<br>
+    • <strong>L<sub>track</sub>:</strong> 2D correspondence prediction across frames<br><br>
+    <strong>Critical ablation finding:</strong> Removing ANY single task degrades point map accuracy — the tasks are genuinely synergistic, not just additive. Camera estimation improves depth; depth improves tracking; tracking improves camera.</p>
+  </div>
+
+  <h3>Special Tokens: Camera & Register</h3>
+  <div class="igrid">
+    <div class="ibox">
+      <div class="iico">📸</div>
+      <div class="ititle">Camera Token (t^g)</div>
+      <div class="itext">One per frame. Aggregates global scene context. Used by camera head to predict pose. First frame uses unique learnable tokens to define the coordinate origin. Participates in all attention layers.</div>
+    </div>
+    <div class="ibox">
+      <div class="iico">📌</div>
+      <div class="ititle">Register Tokens (t^R)</div>
+      <div class="itext">Four per frame. Act as "memory slots" for the frame. Later shown in VGGT-Ω to encode rich scene semantics — useful for robotics VLA models and language-scene alignment.</div>
+    </div>
+    <div class="ibox">
+      <div class="iico">🔄</div>
+      <div class="ititle">Permutation Equivariance</div>
+      <div class="itext">No frame-index embeddings used. The model is invariant to input ordering — critical for generalization to arbitrary view sets, video sequences, and unordered photo collections.</div>
+    </div>
+  </div>
+
+  <h3>Runtime & Memory Scaling (NVIDIA H100)</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Input Frames</th><th>Runtime (s)</th><th>Peak GPU Mem (GB)</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>0.05</td><td>2.07</td><td>Near-real-time</td></tr>
+        <tr><td>10</td><td>0.14</td><td>3.63</td><td>Still very fast</td></tr>
+        <tr><td>50</td><td>1.04</td><td>11.41</td><td>Practical range</td></tr>
+        <tr><td>200</td><td>8.75</td><td>40.63</td><td>Quadratic cost visible</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Key Experimental Results</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Method</th><th>Re10K AUC@30↑</th><th>CO3Dv2 AUC@30↑</th><th>Runtime</th></tr></thead>
+      <tbody>
+        <tr><td>COLMAP + SPSG</td><td>45.2</td><td>25.3</td><td>~15s</td></tr>
+        <tr><td>DUSt3R</td><td>67.7</td><td>76.7</td><td>~7s</td></tr>
+        <tr><td>MASt3R</td><td>76.4</td><td>81.8</td><td>~9s</td></tr>
+        <tr><td>VGGSfM v2</td><td>78.9</td><td>83.4</td><td>~10s</td></tr>
+        <tr><td class="best">VGGT (Feed-Forward)</td><td class="best">85.3</td><td class="best">88.2</td><td class="best">~0.2s</td></tr>
+        <tr><td class="best">VGGT (with BA)</td><td class="best">93.5</td><td class="best">91.8</td><td class="best">~1.8s</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="srow">
+    <div class="sc"><div class="snum" style="color:var(--v)">1.2B</div><div class="slabel">Parameters</div></div>
+    <div class="sc"><div class="snum" style="color:var(--v)">85.3</div><div class="slabel">AUC@30 Re10K (feed-fwd)</div></div>
+    <div class="sc"><div class="snum" style="color:var(--v)">93.5</div><div class="slabel">AUC@30 Re10K (with BA)</div></div>
+    <div class="sc"><div class="snum" style="color:var(--v)">64×</div><div class="slabel">A100 GPUs · 9 days</div></div>
+  </div>
+</section>
+
+<!-- ===== DA3 ===== -->
+<section class="sec" id="da3">
+  <div class="phead ph3">
+    <div class="pnum" style="color:var(--a)">03</div>
+    <div>
+      <div class="ptitle" style="color:#55efc4">Depth Anything 3: Recovering Visual Space from Any Views</div>
+      <div class="pmeta">arXiv:2511.10647 · Depth Anything Team · Nov 2024 / 2025</div>
+      <div class="ptag">"A plain ViT + depth-ray prediction is all you need — minimalism beats complexity."</div>
+    </div>
+  </div>
+
+  <h3>The Minimalist Thesis</h3>
+  <p>DA3's central argument is provocative: the specialized architectures in DUSt3R and VGGT are unnecessary. A single pretrained DINOv2 backbone with minimal modification, combined with the right prediction target (depth + ray maps), achieves superior performance. DA3-Giant (1.1B params) beats VGGT (1.19B params) by 35.7% on camera pose accuracy. The key is not architecture — it's <strong>representation choice</strong> and <strong>pretraining quality</strong>.</p>
+
+  <div class="callout cs">
+    <span class="cico">🏆</span>
+    <div class="ctxt"><strong>The Depth-Ray Insight:</strong> A 3D point P is recovered as <strong>P = D · R + O</strong>, where D is depth (scalar), R is a unit ray direction in world space (3D vector), and O is the camera center. This representation <em>decouples scene structure (D) from camera orientation (R)</em>. Ablation: Depth+Ray significantly outperforms Depth+PCD+Cam or Depth+Cam alone. The ray map implicitly encodes camera extrinsics without requiring explicit pose regression — the model learns to embed camera information in the ray field.</div>
+  </div>
+
+  <h3>Architecture: Single ViT with Input-Adaptive Cross-View Attention</h3>
+  <div class="arch">
+    <div style="display:flex;flex-direction:column;gap:9px;align-items:center;min-width:500px">
+      <div style="display:flex;gap:9px;flex-wrap:wrap;justify-content:center">
+        <div class="ab" style="border-color:#555"><div class="abt">I₁ Patches</div><div class="abs">+ Camera Token</div></div>
+        <div class="aarr">···</div>
+        <div class="ab" style="border-color:#555"><div class="abt">Iₙ Patches</div><div class="abs">+ Camera Token</div></div>
+      </div>
+      <div style="width:100%;background:var(--c1);border:1px solid var(--br);border-radius:8px;padding:13px">
+        <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:7px">
+          <div class="ab h3c" style="min-width:150px"><div class="abt">First Lₛ layers</div><div class="abs">Within-view self-attention only</div></div>
+          <div class="aarr">→</div>
+          <div class="ab h3c" style="min-width:190px"><div class="abt">Remaining Lᵍ layers</div><div class="abs">Alternate: cross-view ↔ within-view (2:1 ratio)</div></div>
+        </div>
+        <p style="text-align:center;font-size:.74em;color:var(--tm)">DINOv2 pretrained backbone · Optimal ratio: 2 within-view : 1 cross-view · Camera tokens participate in all attention</p>
+      </div>
+      <div style="display:flex;gap:9px;flex-wrap:wrap;justify-content:center">
+        <div class="ab h3c"><div class="abt">Dual-DPT Head</div><div class="abs">Shared reassembly → separate fusion</div></div>
+        <div class="aarr">→</div>
+        <div class="ab h3c"><div class="abt">Depth Map D̂</div><div class="abs">Per-pixel depth</div></div>
+        <div class="ab h3c"><div class="abt">Ray Map R̂</div><div class="abs">H×W×3 unit vectors</div></div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Camera Condition Injection: Posed vs Unposed</h3>
+  <div class="igrid">
+    <div class="ibox">
+      <div class="iico">📷</div>
+      <div class="ititle">Posed Input</div>
+      <div class="itext">Camera parameters (f, q, t) encoded via lightweight MLP into camera tokens cᵢ. Concatenated with patch tokens and participate in all attention operations. Enables metric reconstruction.</div>
+    </div>
+    <div class="ibox">
+      <div class="iico">❓</div>
+      <div class="ititle">Unposed Input</div>
+      <div class="itext">A shared learnable token c_l is used instead. The model learns to infer relative geometry from visual content alone. Enables use without any calibration data — true in-the-wild reconstruction.</div>
+    </div>
+    <div class="ibox">
+      <div class="iico">🎯</div>
+      <div class="ititle">Dual-DPT Head Design</div>
+      <div class="itext">Shared reassembly modules process backbone features. Separate fusion branches predict depth and ray maps independently, maintaining shared geometric context while allowing task-specific refinement.</div>
+    </div>
+  </div>
+
+  <h3>Teacher-Student Learning Paradigm</h3>
+  <p>Real-world depth data (LiDAR, COLMAP) is noisy and sparse. DA3 uses a multi-stage training strategy to handle this fundamental data quality problem:</p>
+  <div class="pipeline">
+    <div class="ps">
+      <div class="pn" style="background:rgba(46,204,113,.2);color:var(--a)">1</div>
+      <div class="pt"><strong>Train DA3-Teacher</strong> on pure synthetic data (Hypersim, TartanAir, Objaverse, Trellis — the "V3" corpus). Predicts scale-shift-invariant <em>exponential depth</em> for enhanced near-camera sensitivity. Uses distance-weighted surface-normal loss for local geometry refinement. No real-world data contamination.</div>
+    </div>
+    <div class="ps">
+      <div class="pn" style="background:rgba(46,204,113,.2);color:var(--a)">2</div>
+      <div class="pt"><strong>Generate Pseudo-Labels:</strong> Teacher generates dense depth labels for real-world images (where GT is sparse/noisy LiDAR or COLMAP). RANSAC-based scale-shift alignment preserves metric integrity from real GT while gaining teacher's fine-grained structural detail.</div>
+    </div>
+    <div class="ps">
+      <div class="pn" style="background:rgba(46,204,113,.2);color:var(--a)">3</div>
+      <div class="pt"><strong>Train DA3 Student</strong> on mixed synthetic + real data. Real-world data uses teacher pseudo-labels. This gives the model both metric accuracy (from real GT alignment) and dense structural detail (from teacher's synthetic training). The student surpasses the teacher on real-world benchmarks.</div>
+    </div>
+  </div>
+
+  <h3>Data Preprocessing: Careful Curation</h3>
+  <div class="callout cw">
+    <span class="cico">⚠️</span>
+    <div class="ctxt"><strong>Significant effort on dataset cleaning:</strong> TartanAir "amusement" scenes removed (invalid skybox backgrounds). IRS dataset filtered using Canny edge detection to remove spatial misalignment between images and depth. PointOdyssey scenes with incorrect ground depth removed. This level of data hygiene is critical — garbage in, garbage out, even for large models.</div>
+  </div>
+
+  <h3>Feed-Forward 3DGS Application</h3>
+  <p>DA3 serves as a backbone for high-fidelity Novel View Synthesis (NVS) via 3D Gaussian Splatting. A GS-DPT head predicts Gaussian parameters (opacity, rotation, scale, color) aligned with predicted depth. Works with or without known poses. Significantly outperforms task-specific models like DepthSplat or MVSplat.</p>
+
+  <h3>Visual Geometry Benchmark Results</h3>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Model</th><th>Params</th><th>HiRoom AUC@3°↑</th><th>ETH3D AUC@3°↑</th><th>ScanNet++ AUC@3°↑</th></tr></thead>
+      <tbody>
+        <tr><td>VGGT</td><td>1.19B</td><td>49.1</td><td>26.3</td><td>62.6</td></tr>
+        <tr><td>Pi3</td><td>0.96B</td><td>67.0</td><td>35.2</td><td>50.7</td></tr>
+        <tr><td class="best">DA3-Giant</td><td class="best">1.10B</td><td class="best">80.3</td><td class="best">48.4</td><td class="best">85.0</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="srow">
+    <div class="sc"><div class="snum" style="color:var(--a)">35.7%</div><div class="slabel">Avg improvement over VGGT on camera pose</div></div>
+    <div class="sc"><div class="snum" style="color:var(--a)">23.6%</div><div class="slabel">Avg improvement on geometric accuracy</div></div>
+    <div class="sc"><div class="snum" style="color:var(--a)">98.8</div><div class="slabel">δ₁ on ETH3D (vs DA2: 86.5)</div></div>
+    <div class="sc"><div class="snum" style="color:var(--a)">128</div><div class="slabel">H100 GPUs · 200k steps</div></div>
+  </div>
+</section>
+
+<!-- ===== VGGT-OMEGA ===== -->
+<section class="sec" id="omega">
+  <div class="phead ph4">
+    <div class="pnum" style="color:var(--o)">04</div>
+    <div>
+      <div class="ptitle" style="color:#d6a4ff">VGGT-Ω: Scaling Feed-Forward 3D Reconstruction</div>
+        <div class="pmeta">arXiv:2605.15195 · Oxford VGG & Meta AI · May 2025</div>
+        <div class="ptag">"Feed-forward reconstruction obeys power-law scaling — 10B parameters, 4M sequences, dynamic scenes conquered."</div>
+      </div>
+    </div>
+
+    <h3>Motivation: Does Scale Change the Game?</h3>
+    <p>DA3 proved minimalism wins at ~1B params. VGGT-Ω asks: what if we scale to 10B parameters and 15× more data? And critically — can we handle <em>dynamic scenes</em> (moving objects, non-rigid deformations) that all prior models largely ignored? The answer is a resounding yes, with several key architectural and data innovations making it tractable.</p>
+
+    <div class="callout ci">
+      <span class="cico">📐</span>
+      <div class="ctxt"><strong>Scaling Law Discovery:</strong> Point error decreases following a clear <strong>power law</strong> as model size scales from 0.2B → 10B parameters and data scales from 2K → 2M sequences. This is the first demonstration that feed-forward 3D reconstruction is a <em>scalable proxy task</em> for general spatial understanding — analogous to language modeling scaling laws.</div>
+    </div>
+
+    <h3>Architecture Innovation 1: Register Attention</h3>
+    <p>Global self-attention across all frames is quadratic in total token count. VGGT-Ω introduces <strong>Register Attention</strong> — a sparse global communication mechanism using only 16 learnable "scene tokens" per frame:</p>
+    <div class="arch">
+      <div style="display:flex;flex-direction:column;gap:9px;align-items:center;min-width:500px">
+        <div style="display:flex;gap:9px;flex-wrap:wrap;justify-content:center">
+          <div class="ab" style="border-color:#555"><div class="abt">Frame 1 Tokens</div><div class="abs">Image + Camera + 16 Registers</div></div>
+          <div class="aarr">···</div>
+          <div class="ab" style="border-color:#555"><div class="abt">Frame N Tokens</div><div class="abs">Image + Camera + 16 Registers</div></div>
+        </div>
+        <div style="width:100%;background:var(--c1);border:1px solid var(--br);border-radius:8px;padding:13px">
+          <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:7px">
+            <div class="ab ho" style="min-width:160px"><div class="abt">75% of global layers</div><div class="abs">Full global self-attention (all tokens)</div></div>
+            <div class="aarr">+</div>
+            <div class="ab ho" style="min-width:200px"><div class="abt">25% of global layers → Register Attention</div><div class="abs">Step 1: Registers aggregate from all frames<br>Step 2: Image tokens read from local registers</div></div>
+          </div>
+          <p style="text-align:center;font-size:.74em;color:var(--tm)">Saves ~23% FLOPs · ~16% memory · Zero performance drop · 16 registers/frame vs full H'W' image tokens</p>
+        </div>
+        <div class="callout cw" style="width:100%;margin:0">
+          <span class="cico">⚠️</span>
+          <div class="ctxt" style="font-size:.78em"><strong>Extreme case (100% register attention):</strong> Reduces FLOPs to 6% of original, but performance drops to original VGGT levels. The 25% sweet spot maintains full expressivity while gaining efficiency.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Architecture Innovation 2: Lightweight MLP Decoding Head</h3>
+    <div class="igrid">
+      <div class="ibox">
+        <div class="iico">🔄</div>
+        <div class="ititle">DPT → MLP + Pixel-Shuffle</div>
+        <div class="itext">High-resolution convolutional layers in DPT heads replaced with a single MLP outputting 2u² channels (u=4), rearranged via pixel-shuffle to (uH')×(uW')×2 for depth and confidence. Saves ~70% GPU memory.</div>
+      </div>
+      <div class="ibox">
+        <div class="iico">💾</div>
+        <div class="ititle">30% GPU Memory of Predecessor</div>
+        <div class="itext">Combined with register attention and removal of redundant heads, VGGT-Ω uses only ~30% of VGGT's GPU memory. Can process over 1,000 frames on a single 80GB A100.</div>
+      </div>
+      <div class="ibox">
+        <div class="iico">⚡</div>
+        <div class="ititle">20–25% Faster Inference</div>
+        <div class="itext">DINOv3 uses patch size 16 vs DINOv2's 14 — fewer tokens per image. Combined with register attention, inference is 20–25% faster than VGGT with no accuracy loss.</div>
+      </div>
+    </div>
+
+    <div class="callout cw">
+      <span class="cico">🧱</span>
+      <div class="ctxt"><strong>MLP-only head failure mode:</strong> While faster and more memory-efficient, MLP-only decoding heads produce "blocky" artifacts in outdoor scenes with fine structures. VGGT-Ω retains shallow convolutional layers as a compromise — a practical engineering lesson about the limits of pure MLP decoders for dense prediction.</div>
+    </div>
+
+    <h3>Data Scaling: 4M Sequences (15× More Than VGGT)</h3>
+    <div class="pipeline">
+      <div class="ps">
+        <div class="pn" style="background:rgba(155,89,182,.2);color:var(--o)">1</div>
+        <div class="pt"><strong>VLM Pre-filtering:</strong> Vision-Language Model discards videos with shot changes, extreme blur, or lack of parallax. Removes ~60% of raw internet video before any expensive processing.</div>
+      </div>
+      <div class="ps">
+        <div class="pn" style="background:rgba(155,89,182,.2);color:var(--o)">2</div>
+        <div class="pt"><strong>Dynamic Masking:</strong> Grounding DINO detects movable objects (cars, people, animals) and excludes them from rigid-body matching. Critical for dynamic scene annotation quality.</div>
+      </div>
+      <div class="ps">
+        <div class="pn" style="background:rgba(155,89,182,.2);color:var(--o)">3</div>
+        <div class="pt"><strong>Feature Tracking Ensemble:</strong> SIFT + SuperPoint + ALIKED + VGGSfM Tracker. Ensemble approach improves robustness across diverse scene types.</div>
+      </div>
+      <div class="ps">
+        <div class="pn" style="background:rgba(155,89,182,.2);color:var(--o)">4</div>
+        <div class="pt"><strong>SfM + MVS:</strong> COLMAP provides initial cameras and dense depth maps. Multi-view consistency check: points reprojected across views; pixels failing reprojection are invalidated.</div>
+      </div>
+      <div class="ps">
+        <div class="pn" style="background:rgba(155,89,182,.2);color:var(--o)">5</div>
+        <div class="pt"><strong>Supervised Geometric Filtering:</strong> XGBoost + CatBoost ensemble classifier removes low-quality reconstructions based on trajectory smoothness and parallax angles.</div>
+      </div>
+    </div>
+
+    <div class="fbox">
+      <div class="flabel">Optimal Data Mixture</div>
+      <p>Empirically determined: <strong>~80% synthetic data + ~20% real data</strong> achieves best training performance. Pure real data leads to distribution collapse; pure synthetic leads to domain gap. The 80/20 split is a robust finding across model sizes.</p>
+    </div>
+
+    <h3>Self-Supervised Learning Protocol</h3>
+    <div class="arch">
+      <div class="aflow">
+        <div class="ab ho"><div class="abt">Unlabeled Video</div><div class="abs">18M videos</div></div>
+        <div class="aarr">→</div>
+        <div class="ab ho"><div class="abt">Student Model</div><div class="abs">Augmented/permuted views</div></div>
+        <div class="aarr">↔</div>
+        <div class="ab ho"><div class="abt">Teacher Model</div><div class="abs">EMA of student weights</div></div>
+        <div class="aarr">→</div>
+        <div class="ab ho"><div class="abt">Consistency Loss</div><div class="abs">Match predictions + features</div></div>
+      </div>
+      <p style="text-align:center;margin-top:9px;font-size:.74em;color:var(--tm)">Impact: Point error 0.073 → 0.070 · Improves OOD generalization · No annotation cost for 18M videos</p>
+    </div>
+
+    <h3>Emergent Properties of Register Tokens</h3>
+    <div class="igrid">
+      <div class="ibox">
+        <div class="iico">🤖</div>
+        <div class="ititle">Robotics VLA (OpenVLA-OFT)</div>
+        <div class="itext">Frozen VGGT-Ω registers used as additional inputs. LIBERO benchmark: average success rate 97.1% → 98.5%. Registers encode actionable 3D scene understanding without task-specific fine-tuning.</div>
+      </div>
+      <div class="ibox">
+        <div class="iico">💬</div>
+        <div class="ititle">Language Alignment</div>
+        <div class="itext">Symmetric InfoNCE (CLIP-style) loss aligns registers with VLM-generated scene descriptions. 76.8% Top-1 retrieval. Zero-shot transfer to Qwen3 text embeddings: 47.5% Top-1.</div>
+      </div>
+      <div class="ibox">
+        <div class="iico">🎭</div>
+        <div class="ititle">Emergent Motion Segmentation</div>
+        <div class="itext">PCA/k-means clustering of intermediate tokens automatically separates moving objects from static backgrounds — zero explicit motion supervision. Purely emergent from 3D reconstruction training.</div>
+      </div>
+    </div>
+
+    <h3>Key Experimental Results</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Dataset</th><th>Metric</th><th>MegaSaM</th><th>DA3 (1B)</th><th>VGGT-Ω 10B</th></tr></thead>
+        <tbody>
+          <tr><td>Sintel (Dynamic)</td><td>AUC@3°↑</td><td>22.5</td><td>16.2</td><td class="best">40.0 (+77%)</td></tr>
+          <tr><td>Sintel (Dynamic)</td><td>AUC@30°↑</td><td>58.3</td><td>52.7</td><td class="best">79.1</td></tr>
+          <tr><td>ETH3D (Static)</td><td>AUC@3°↑</td><td>5.9</td><td>46.1</td><td class="best">56.3</td></tr>
+          <tr><td>TUM-Dynamic</td><td>AUC@3°↑</td><td>15.4</td><td>20.8</td><td class="best">36.4</td></tr>
+          <tr><td>Sintel</td><td>AbsRel↓</td><td>0.207</td><td>0.118</td><td class="best">0.081</td></tr>
+          <tr><td>ETH3D</td><td>δ₁.₂₅↑</td><td>94.8</td><td>99.6</td><td class="best">99.8</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="srow">
+      <div class="sc"><div class="snum" style="color:var(--o)">10B</div><div class="slabel">Max model size</div></div>
+      <div class="sc"><div class="snum" style="color:var(--o)">4M</div><div class="slabel">Training sequences</div></div>
+      <div class="sc"><div class="snum" style="color:var(--o)">1000+</div><div class="slabel">Frames on single 80GB A100</div></div>
+      <div class="sc"><div class="snum" style="color:var(--o)">4–8×</div><div class="slabel">Faster convergence with DINOv3 init</div></div>
+    </div>
+  </section>
+
+  <!-- ===== COMPARISON ===== -->
+  <section class="sec" id="comparison">
+    <h2 class="st"><span class="ico">⚖️</span> Cross-Paper Comparison & Technical Analysis</h2>
+    <p class="sdesc">A systematic comparison of all four models across architecture, representation, data, and philosophy.</p>
+
+    <h3>Architecture & Representation Matrix</h3>
+    <div class="mx-wrap">
+      <div class="mx">
+        <div class="mh">Dimension</div>
+        <div class="mh" style="color:#ff7b6b">DUSt3R</div>
+        <div class="mh" style="color:#74b9ff">VGGT</div>
+        <div class="mh" style="color:#55efc4">DA3</div>
+        <div class="mh" style="color:#d6a4ff">VGGT-Ω</div>
+
+        <div class="ml">3D Representation</div>
+        <div class="mc">Point Maps</div>
+        <div class="mc">Point Maps + Depth</div>
+        <div class="mc" style="color:var(--ok)">Depth + Ray ✓</div>
+        <div class="mc">Point Maps + Depth</div>
+
+        <div class="ml">Attention Strategy</div>
+        <div class="mc">Cross-attn decoder</div>
+        <div class="mc">Alternating (frame/global)</div>
+        <div class="mc">Within/cross-view (2:1)</div>
+        <div class="mc">Global + Register Attn</div>
+
+        <div class="ml">Backbone Pretrain</div>
+        <div class="mc">CroCo</div>
+        <div class="mc">DINOv2</div>
+        <div class="mc" style="color:var(--ok)">DINOv2 (full leverage) ✓</div>
+        <div class="mc">DINOv3</div>
+
+        <div class="ml">Max Input Views</div>
+        <div class="mc">2 (native)</div>
+        <div class="mc">2–24 (trained)</div>
+        <div class="mc">2–18 (trained)</div>
+        <div class="mc">1000+ (inference)</div>
+
+        <div class="ml">Camera Output</div>
+        <div class="mc"><div class="dr"></div> Derived</div>
+        <div class="mc"><div class="dg"></div> Direct</div>
+        <div class="mc"><div class="dg"></div> Direct</div>
+        <div class="mc"><div class="dg"></div> Direct</div>
+
+        <div class="ml">Dynamic Scenes</div>
+        <div class="mc"><div class="dr"></div> Not designed</div>
+        <div class="mc"><div class="dy"></div> Limited</div>
+        <div class="mc"><div class="dy"></div> Limited</div>
+        <div class="mc"><div class="dg"></div> Explicit support</div>
+
+        <div class="ml">Uncertainty Output</div>
+        <div class="mc"><div class="dg"></div> Confidence maps</div>
+        <div class="mc"><div class="dg"></div> Aleatoric uncertainty</div>
+        <div class="mc"><div class="dr"></div> Not primary</div>
+        <div class="mc"><div class="dg"></div> Depth + confidence</div>
+
+        <div class="ml">Self-supervised Data</div>
+        <div class="mc"><div class="dr"></div> No</div>
+        <div class="mc"><div class="dr"></div> No</div>
+        <div class="mc"><div class="dy"></div> Teacher pseudo-labels</div>
+        <div class="mc"><div class="dg"></div> Momentum teacher (18M vids)</div>
+
+        <div class="ml">Downstream NVS</div>
+        <div class="mc"><div class="dr"></div> Not shown</div>
+        <div class="mc"><div class="dy"></div> Finetuned (Plücker rays)</div>
+        <div class="mc"><div class="dg"></div> GS-DPT head</div>
+        <div class="mc"><div class="dy"></div> Not primary focus</div>
+
+        <div class="ml">Scaling Study</div>
+        <div class="mc"><div class="dr"></div> No</div>
+        <div class="mc"><div class="dr"></div> No</div>
+        <div class="mc"><div class="dr"></div> No</div>
+        <div class="mc"><div class="dg"></div> Power-law verified</div>
+      </div>
+    </div>
+    <p style="font-size:.73em;color:var(--tm);margin-top:5px">● Green = strong · ● Yellow = partial · ● Gray = absent/not applicable</p>
+
+    <h3>Performance on Shared Benchmarks</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Benchmark</th><th>Metric</th><th style="color:#ff7b6b">DUSt3R</th><th style="color:#74b9ff">VGGT</th><th style="color:#55efc4">DA3-Giant</th><th style="color:#d6a4ff">VGGT-Ω 10B</th></tr></thead>
+        <tbody>
+          <tr><td>CO3Dv2</td><td>AUC@30↑</td><td>76.7</td><td class="best">88.2</td><td>—</td><td>—</td></tr>
+          <tr><td>RealEstate10K</td><td>AUC@30↑</td><td>67.7</td><td class="best">85.3</td><td>—</td><td>—</td></tr>
+          <tr><td>ETH3D</td><td>AUC@3°↑</td><td>—</td><td>26.3</td><td>48.4</td><td class="best">56.3</td></tr>
+          <tr><td>ScanNet++</td><td>AUC@3°↑</td><td>—</td><td>62.6</td><td class="best">85.0</td><td>—</td></tr>
+          <tr><td>DTU</td><td>Chamfer↓ (mm)</td><td>1.741</td><td class="best">0.382</td><td>—</td><td>—</td></tr>
+          <tr><td>Sintel (Dynamic)</td><td>AUC@3°↑</td><td>—</td><td>—</td><td>16.2</td><td class="best">40.0</td></tr>
+          <tr><td>ETH3D Monocular</td><td>δ₁↑</td><td>—</td><td>—</td><td class="best">98.8</td><td>99.8</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The Representation Debate: What Does Ablation Tell Us?</h3>
+    <div class="g2">
+      <div class="cw2">
+        <div class="ct">DA3 Ablation: Prediction Target Comparison</div>
+        <div style="padding:10px 0">
+          <div class="pb-wrap">
+            <div class="pb-label"><span>Depth + Ray (DA3)</span><span style="color:var(--ok)">Best ✓</span></div>
+            <div class="pb"><div class="pb-fill" style="width:100%;background:var(--ok)"></div></div>
+          </div>
+          <div class="pb-wrap" style="margin-top:10px">
+            <div class="pb-label"><span>Depth + PCD + Cam</span><span>−12% camera pose</span></div>
+            <div class="pb"><div class="pb-fill" style="width:78%;background:var(--wn)"></div></div>
+          </div>
+          <div class="pb-wrap" style="margin-top:10px">
+            <div class="pb-label"><span>Depth + Cam only</span><span>−21% camera pose</span></div>
+            <div class="pb"><div class="pb-fill" style="width:65%;background:var(--d)"></div></div>
+          </div>
+          <div class="pb-wrap" style="margin-top:10px">
+            <div class="pb-label"><span>Depth only</span><span>−38% camera pose</span></div>
+            <div class="pb"><div class="pb-fill" style="width:48%;background:#6e7681"></div></div>
+          </div>
+        </div>
+        <p style="font-size:.74em;color:var(--tm);text-align:center">Ray maps encode camera orientation per-pixel — richer than a single global pose token</p>
+      </div>
+      <div class="cw2">
+        <div class="ct">VGGT Ablation: Attention Strategy</div>
+        <div style="padding:10px 0">
+          <div class="pb-wrap">
+            <div class="pb-label"><span>Alternating Attention (VGGT)</span><span style="color:var(--ok)">Best ✓</span></div>
+            <div class="pb"><div class="pb-fill" style="width:100%;background:var(--ok)"></div></div>
+          </div>
+          <div class="pb-wrap" style="margin-top:10px">
+            <div class="pb-label"><span>Global Self-Attention Only</span><span>−8% point map accuracy</span></div>
+            <div class="pb"><div class="pb-fill" style="width:82%;background:var(--wn)"></div></div>
+          </div>
+          <div class="pb-wrap" style="margin-top:10px">
+            <div class="pb-label"><span>Cross-Attention Only</span><span>−15% point map accuracy</span></div>
+            <div class="pb"><div class="pb-fill" style="width:70%;background:var(--d)"></div></div>
+          </div>
+          <div class="pb-wrap" style="margin-top:10px">
+            <div class="pb-label"><span>Frame-wise Only</span><span>Cannot fuse views</span></div>
+            <div class="pb"><div class="pb-fill" style="width:20%;background:#6e7681"></div></div>
+          </div>
+        </div>
+        <p style="font-size:.74em;color:var(--tm);text-align:center">Alternation enables intra-frame normalization AND inter-frame fusion — both necessary</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== INSIGHTS ===== -->
+  <section class="sec" id="insights">
+    <h2 class="st"><span class="ico">🔬</span> Deep Technological Insights for Researchers</h2>
+    <p class="sdesc">Distilled lessons from across all four papers — the kind of understanding that takes months of reading to accumulate.</p>
+
+    <h3>1. The Representation Is the Model</h3>
+    <div class="fbox">
+      <div class="flabel">Core Insight</div>
+      <p>The choice of prediction target is more impactful than architecture. DUSt3R's pointmap representation enabled the entire field. DA3's depth+ray representation beat a larger model (VGGT) by 35.7% on camera pose. The ray map encodes camera orientation <em>implicitly per pixel</em> — it is a richer signal than a single global pose vector because it provides spatial context about how the camera sees each scene region. This is why DA3's minimalist architecture works: the representation does the heavy lifting.</p>
+    </div>
+
+    <h3>2. Pretraining Quality Dominates Architectural Complexity</h3>
+    <p>DA3 uses a plain DINOv2 ViT with minimal modification and beats VGGT's specialized alternating-attention architecture. VGGT-Ω shows that DINOv3 initialization speeds convergence 4–8× vs training from scratch. The lesson: invest in pretraining quality before task-specific architectural innovations. The geometry is already latent in a good visual encoder.</p>
+
+    <h3>3. Data Quality > Data Quantity (But You Need Both)</h3>
+    <div class="igrid">
+      <div class="ibox">
+        <div class="iico">🧹</div>
+        <div class="ititle">DA3's Curation Philosophy</div>
+        <div class="itext">Removed entire dataset splits (TartanAir "amusement"), filtered with Canny edge detection (IRS), removed incorrect ground depth (PointOdyssey). Teacher-student distillation with RANSAC alignment ensures real-world data doesn't corrupt metric integrity.</div>
+      </div>
+      <div class="ibox">
+        <div class="iico">🏭</div>
+        <div class="ititle">VGGT-Ω's Pipeline</div>
+        <div class="itext">5-stage annotation pipeline: VLM pre-filtering, dynamic masking, ensemble tracking, SfM+MVS, ML-based geometric filtering. 40M raw videos → 0.8M high-quality sequences. 98% rejection rate is acceptable when quality is paramount.</div>
+      </div>
+      <div class="ibox">
+        <div class="iico">⚗️</div>
+        <div class="ititle">The 80/20 Synthetic/Real Ratio</div>
+        <div class="itext">VGGT-Ω empirically finds 80% synthetic + 20% real is optimal across all model sizes. Synthetic provides clean geometry; real provides appearance diversity. Likely a general principle for 3D foundation model training.</div>
+      </div>
+    </div>
+
+    <h3>4. Known Failure Modes and Dataset Pathologies</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Failure Mode</th><th>Description</th><th>Affected Datasets</th><th>Mitigation</th></tr></thead>
+        <tbody>
+          <tr><td>Sensor Leakage</td><td>Background depth "leaks" into foreground due to LiDAR misalignment</td><td>ScanNet++</td><td>Multi-view consistency reprojection check</td></tr>
+          <tr><td>Thin Structures</td><td>Inaccurate GT for fence bars, wires — too thin for sensor resolution</td><td>Synthetic datasets</td><td>Confidence weighting, ignore thin-structure regions</td></tr>
+          <tr><td>Fake Backgrounds</td><td>Proxy geometry (domes, planes) doesn't match visual appearance</td><td>Kubric, PointOdyssey</td><td>Remove affected scenes entirely</td></tr>
+          <tr><td>Doming Effect</td><td>Degenerate SfM — scene appears curved due to radial distortion or near-parallel views</td><td>Internet video collections</td><td>Trajectory smoothness + parallax angle filtering</td></tr>
+          <tr><td>Scale Ambiguity</td><td>Monocular depth has no absolute scale without reference</td><td>All monocular data</td><td>Canonical focal length (DA3-Metric: f_c=300), RANSAC scale-shift alignment</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>5. The Multi-Task Synergy Principle</h3>
+    <div class="callout ci">
+      <span class="cico">🔗</span>
+      <div class="ctxt"><strong>VGGT's ablation finding:</strong> Removing <em>any single task</em> (camera, depth, or tracking) from the multi-task loss degrades point map accuracy. The tasks are genuinely synergistic: camera estimation provides global context that sharpens depth boundaries; depth provides scale that constrains camera translation; tracking provides temporal consistency that regularizes both. 3D understanding is fundamentally multi-task — you cannot fully learn geometry without simultaneously learning motion, structure, and appearance.</div>
+    </div>
+
+    <h3>6. Model Souping Reveals Internal Representations</h3>
+    <p>VGGT-Ω's model souping experiment (fusing VGGT and VGGT-Ω weights) revealed that <strong>depth and field-of-view information is primarily stored in the Feed-Forward Networks (FFNs)</strong>, not the attention matrices. Implications:</p>
+    <div class="igrid">
+      <div class="ibox">
+        <div class="iico">🔧</div>
+        <div class="ititle">Fine-tuning Strategy</div>
+        <div class="itext">When adapting to new domains (medical imaging, satellite), prioritize fine-tuning FFN layers. Attention patterns (how to fuse views) transfer better than geometric priors (what depth values to predict).</div>
+      </div>
+      <div class="ibox">
+        <div class="iico">🧬</div>
+        <div class="ititle">Architecture Design</div>
+        <div class="itext">FFNs serve as "geometric knowledge banks" — analogous to LLMs where FFNs store factual knowledge. For 3D models, FFNs store scene-type-specific depth statistics and camera geometry priors.</div>
+      </div>
+      <div class="ibox">
+        <div class="iico">🔀</div>
+        <div class="ititle">Model Merging</div>
+        <div class="itext">Weight interpolation between models trained on different data distributions is viable — suggesting the loss landscape is relatively smooth and models converge to similar geometric representations.</div>
+      </div>
+    </div>
+
+    <h3>7. Scaling Laws and the Path Forward</h3>
+    <div class="fbox">
+      <div class="flabel">Power-Law Scaling (VGGT-Ω)</div>
+      <p>Point error E follows: <strong>E ∝ N<sup>−α</sup></strong> for both model parameters N and dataset size.<br><br>
+      Observed across: 200M → 500M → 1B → 10B params · 2K → 20K → 200K → 2M sequences<br><br>
+      <strong>Implication:</strong> Feed-forward 3D reconstruction is a scalable proxy task. Unlike SfM (an optimization problem that doesn't scale with compute), neural reconstruction improves predictably with scale — positioning it as a viable component of general-purpose world models.</p>
+    </div>
+
+    <h3>8. Open Problems and Research Frontiers</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Open Problem</th><th>Current State</th><th>Research Direction</th></tr></thead>
+        <tbody>
+          <tr><td>Non-Rigid Deformations</td><td>VGGT-Ω handles dynamic rigid; non-rigid (cloth, faces) largely unsolved</td><td>4D Gaussian Splatting integration, deformation field prediction heads</td></tr>
+          <tr><td>Fisheye / Panoramic</td><td>All models assume perspective projection</td><td>Generalized ray parameterization, equirectangular training data</td></tr>
+          <tr><td>Extreme Viewpoint Change</td><td>Performance degrades >90° rotation between views</td><td>Larger training view diversity, explicit epipolar attention</td></tr>
+          <tr><td>Real-Time Inference</td><td>10B model not real-time; 200M borderline</td><td>Knowledge distillation, quantization, register attention extension</td></tr>
+          <tr><td>Long-Sequence Video</td><td>Memory scales quadratically; 1000 frames practical limit</td><td>Sliding window with register-based memory, hierarchical attention</td></tr>
+          <tr><td>Metric Scale (Monocular)</td><td>Canonical focal length is a heuristic</td><td>IMU fusion, learned scale priors from scene semantics</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>9. Practical Guidance for Robotics & Autonomous Driving</h3>
+    <div class="callout cs">
+      <span class="cico">🚗</span>
+      <div class="ctxt">
+        <strong>For Autonomous Driving (your domain, Owen):</strong><br>
+        • <strong>DA3-Metric</strong> is the most practical: trained on Waymo, Argoverse, 14 datasets. Canonical focal length resolves scale. Best for monocular depth in camera-only setups.<br>
+        • <strong>VGGT-Ω registers</strong> are promising for VLA-style end-to-end driving: frozen registers improved OpenVLA-OFT by 1.4% absolute on LIBERO. Emergent motion segmentation (moving vs static) is directly useful for dynamic object detection without explicit supervision.<br>
+        • <strong>Dynamic scene handling</strong> in VGGT-Ω (Sintel AUC@3°: 40.0 vs DA3's 16.2) makes it the clear choice for scenes with moving vehicles and pedestrians.<br>
+        • <strong>Memory efficiency</strong>: VGGT-Ω processes 1000+ frames on 80GB A100 — viable for temporal window-based online mapping.
+      </div>
+    </div>
+  </section>
+
+  </div><!-- /wrap -->
+
+  <div class="footer">
+    <p>Technical Survey: DUSt3R · VGGT · Depth Anything 3 · VGGT-Ω &nbsp;|&nbsp; Compiled for PhD-level study in 3D Vision & Robotics</p>
+    <p style="margin-top:5px">arXiv: 2312.14132 · 2503.11651 · 2511.10647 · 2605.15195</p>
+  </div>
+
+  <script>
+  document.querySelectorAll('.nav a').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+  </script>
+  </body>
+  </html>
+
