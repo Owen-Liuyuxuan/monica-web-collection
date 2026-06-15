@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Taubin Circle Fitting — From Naive to Rigorous</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"/>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+  :root {
+    --bg:      #0d1117;
+    --bg2:     #161b22;
+    --bg3:     #1c2330;
+    --border:  #30363d;
+    --text:    #e6edf3;
+    --muted:   #8b949e;
+    --blue:    #58a6ff;
+    --red:     #f78166;
+    --green:   #3fb950;
+    --purple:  #d2a8ff;
+    --orange:  #ffa657;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.75;
+  }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(13,17,23,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 48px;
+    display: flex; align-items: center; gap: 2rem;
+  }
+  .nav-brand { font-weight: 700; color: var(--blue); font-size: 0.9rem; white-space: nowrap; }
+  .nav-links { display: flex; gap: 0.25rem; overflow-x: auto; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none; font-size: 0.78rem;
+    padding: 0.25rem 0.65rem; border-radius: 5px; white-space: nowrap;
+    transition: color 0.15s, background 0.15s;
+  }
+  .nav-links a:hover { color: var(--text); background: var(--bg3); }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 7rem 2rem 5rem;
+    text-align: center;
+    background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(88,166,255,0.08) 0%, transparent 70%);
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-eyebrow {
+    display: inline-block;
+    background: rgba(88,166,255,0.1); border: 1px solid rgba(88,166,255,0.25);
+    color: var(--blue); border-radius: 20px;
+    padding: 0.2rem 1rem; font-size: 0.72rem; letter-spacing: 0.1em;
+    text-transform: uppercase; font-weight: 700; margin-bottom: 1.5rem;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 800; line-height: 1.15;
+    background: linear-gradient(135deg, #e6edf3 20%, #58a6ff 60%, #d2a8ff 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+  }
+  .hero-sub {
+    color: var(--muted); font-size: 1.05rem;
+    max-width: 580px; margin: 0 auto 2.5rem;
+  }
+  .hero-chips { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; }
+  .chip {
+    border-radius: 20px; padding: 0.3rem 0.9rem;
+    font-size: 0.78rem; font-weight: 600; border: 1px solid;
+  }
+  .chip-blue   { background: rgba(88,166,255,0.08);  border-color: rgba(88,166,255,0.25);  color: var(--blue);   }
+  .chip-red    { background: rgba(247,129,102,0.08); border-color: rgba(247,129,102,0.25); color: var(--red);    }
+  .chip-green  { background: rgba(63,185,80,0.08);   border-color: rgba(63,185,80,0.25);   color: var(--green);  }
+  .chip-purple { background: rgba(210,168,255,0.08); border-color: rgba(210,168,255,0.25); color: var(--purple); }
+
+  /* ── LAYOUT ── */
+  .page { max-width: 960px; margin: 0 auto; padding: 0 2rem; }
+  section { padding: 4.5rem 0; border-bottom: 1px solid var(--border); }
+  section:last-of-type { border-bottom: none; }
+
+  .sec-label {
+    font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+    font-weight: 700; margin-bottom: 0.4rem;
+  }
+  h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; margin-bottom: 0.75rem; }
+  .lead { color: var(--muted); font-size: 1rem; max-width: 680px; margin-bottom: 2.5rem; }
+
+  /* ── MATH ── */
+  .math-box {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1rem 1.5rem;
+    margin: 1rem 0; overflow-x: auto;
+  }
+  .math-box.blue   { border-left: 3px solid var(--blue);   }
+  .math-box.red    { border-left: 3px solid var(--red);    }
+  .math-box.green  { border-left: 3px solid var(--green);  }
+  .math-box.purple { border-left: 3px solid var(--purple); }
+  .math-box.orange { border-left: 3px solid var(--orange); }
+
+  /* ── CARDS ── */
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+  .card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.5rem;
+  }
+  .card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .card p { color: var(--muted); font-size: 0.88rem; line-height: 1.65; }
+
+  /* ── CALLOUT ── */
+  .callout {
+    display: flex; gap: 0.75rem; align-items: flex-start;
+    border-radius: 8px; padding: 0.9rem 1.1rem; margin: 1.25rem 0;
+    font-size: 0.88rem;
+  }
+  .callout .icon { flex-shrink: 0; font-size: 1rem; margin-top: 0.1rem; }
+  .callout p { color: var(--muted); }
+  .callout strong { color: var(--text); display: block; margin-bottom: 0.15rem; }
+  .callout.warn   { background: rgba(247,129,102,0.07); border: 1px solid rgba(247,129,102,0.2); }
+  .callout.info   { background: rgba(88,166,255,0.07);  border: 1px solid rgba(88,166,255,0.2);  }
+  .callout.good   { background: rgba(63,185,80,0.07);   border: 1px solid rgba(63,185,80,0.2);   }
+  .callout.purple { background: rgba(210,168,255,0.07); border: 1px solid rgba(210,168,255,0.2); }
+
+  /* ── CODE ── */
+  .code-block {
+    background: #090d12; border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden; margin: 1.25rem 0;
+  }
+  .code-header {
+    background: var(--bg3); border-bottom: 1px solid var(--border);
+    padding: 0.45rem 1rem; display: flex; align-items: center; gap: 0.4rem;
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .code-fname { color: var(--muted); font-size: 0.75rem; margin-left: auto; font-family: monospace; }
+  pre {
+    padding: 1.1rem 1.4rem; overflow-x: auto;
+    font-size: 0.8rem; line-height: 1.7;
+    font-family: 'JetBrains Mono','Fira Code','Cascadia Code',monospace;
+  }
+  .kw { color: #ff7b72; }
+  .fn { color: #d2a8ff; }
+  .ty { color: #ffa657; }
+  .cm { color: #6e7681; font-style: italic; }
+  .nm { color: #79c0ff; }
+  .hl      { display: block; background: rgba(88,166,255,0.09);  margin: 0 -1.4rem; padding: 0 1.4rem; border-left: 2px solid var(--blue);   }
+  .hl-red  { display: block; background: rgba(247,129,102,0.09); margin: 0 -1.4rem; padding: 0 1.4rem; border-left: 2px solid var(--red);    }
+  .hl-grn  { display: block; background: rgba(63,185,80,0.09);   margin: 0 -1.4rem; padding: 0 1.4rem; border-left: 2px solid var(--green);  }
+
+  /* ── TIMELINE ── */
+  .timeline { position: relative; padding-left: 2.25rem; }
+  .timeline::before {
+    content: ''; position: absolute; left: 0.55rem; top: 0.4rem; bottom: 0.4rem;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--blue), var(--purple), var(--green));
+    border-radius: 2px;
+  }
+  .tl-item { position: relative; margin-bottom: 2.25rem; }
+  .tl-item:last-child { margin-bottom: 0; }
+  .tl-dot {
+    position: absolute; left: -2.25rem; top: 0.25rem;
+    width: 1.1rem; height: 1.1rem; border-radius: 50%;
+    border: 2px solid var(--bg); display: flex; align-items: center; justify-content: center;
+    font-size: 0.6rem; font-weight: 800; color: #000;
+  }
+  .tl-item h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.35rem; }
+  .tl-item p  { color: var(--muted); font-size: 0.88rem; }
+
+  /* ── PROGRESS FLOW ── */
+  .flow {
+    display: flex; align-items: stretch; gap: 0; flex-wrap: wrap;
+    margin: 2rem 0;
+  }
+  .flow-step {
+    flex: 1; min-width: 160px;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.1rem 1.2rem;
+  }
+  .flow-arrow {
+    display: flex; align-items: center; padding: 0 0.4rem;
+    color: var(--muted); font-size: 1.2rem; flex-shrink: 0;
+  }
+  .flow-num { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.3rem; }
+  .flow-step h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .flow-step p  { font-size: 0.78rem; color: var(--muted); }
+
+  /* ── COMPARISON TABLE ── */
+  .table-wrap { overflow-x: auto; margin-top: 1.5rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+  th {
+    background: var(--bg3); padding: 0.65rem 1rem;
+    text-align: left; border-bottom: 2px solid var(--border);
+    font-weight: 700; white-space: nowrap;
+  }
+  td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .tag {
+    display: inline-block; border-radius: 4px;
+    padding: 0.1rem 0.45rem; font-size: 0.7rem; font-weight: 700;
+  }
+  .tag-r { background: rgba(247,129,102,0.15); color: var(--red);   }
+  .tag-g { background: rgba(63,185,80,0.15);   color: var(--green); }
+  .tag-b { background: rgba(88,166,255,0.15);  color: var(--blue);  }
+
+  /* ── SVG DIAGRAMS ── */
+  .diagram-wrap {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.5rem;
+    display: flex; justify-content: center; margin: 1.5rem 0;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center; padding: 3rem 2rem;
+    color: var(--muted); font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--blue); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    .flow { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); align-self: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-brand">⭕ Taubin Fitting</span>
+  <div class="nav-links">
+    <a href="#problem">Problem</a>
+    <a href="#trivial">Trivial Issue</a>
+    <a href="#impl1">Impl 1</a>
+    <a href="#bookstein">Bookstein</a>
+    <a href="#impl2">Impl 2</a>
+    <a href="#safeguards">Safeguards</a>
+    <a href="#comparison">Comparison</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Mathematical Journey</div>
+  <h1>Circle Fitting:<br/>From Naïve to Taubin</h1>
+  <p class="hero-sub">
+    A visual walkthrough of how a simple least-squares idea evolves into
+    a geometrically rigorous, numerically stable algorithm used in production autonomous driving.
+  </p>
+  <div class="hero-chips">
+    <span class="chip chip-blue">Algebraic Geometry</span>
+    <span class="chip chip-red">Constrained Optimization</span>
+    <span class="chip chip-green">Generalized Eigenproblems</span>
+    <span class="chip chip-purple">Numerical Stability</span>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- ── SECTION 0: PROGRESS OVERVIEW ── -->
+<section>
+  <div class="sec-label" style="color:var(--muted)">Overview</div>
+  <h2>The Line of Progress</h2>
+  <p class="lead">Each step fixes a concrete problem in the previous one. Follow the chain from the raw idea to the production implementation.</p>
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-num" style="color:var(--blue)">Origin</div>
+      <h4>Algebraic Fit</h4>
+      <p>Minimize $\|M\mathbf{v}\|^2$. Trivial solution $\mathbf{v}=\mathbf{0}$.</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-num" style="color:var(--red)">Fix 1</div>
+      <h4>Euclidean Constraint</h4>
+      <p>$\|\mathbf{v}\|=1$ → standard eigenproblem. Works but geometrically biased.</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-num" style="color:var(--purple)">Fix 2</div>
+      <h4>Bookstein Constraint</h4>
+      <p>$\mathbf{v}^TC\mathbf{v}=1$ → generalized eigenproblem. Geometrically correct.</p>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-num" style="color:var(--green)">Fix 3</div>
+      <h4>Engineering Guards</h4>
+      <p>Centroid, collinearity check, signed curvature. Production-ready.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 1: THE PROBLEM ── -->
+<section id="problem">
+  <div class="sec-label" style="color:var(--blue)">Step 1 — The Problem</div>
+  <h2>What Are We Fitting?</h2>
+  <p class="lead">Given $N$ noisy 2D points, find the circle that best passes through them. This is core to estimating road curvature from sensor data in autonomous driving.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title" style="color:var(--blue)">The Algebraic Circle Equation</div>
+      <p>Any circle in 2D satisfies:</p>
+      <div class="math-box blue">$$a(x^2+y^2)+bx+cy+d=0$$</div>
+      <p>The vector $\mathbf{v}=[a,b,c,d]^T$ fully encodes the circle. From it:</p>
+      <div class="math-box blue">
+        $$\text{Center}=\!\left(-\tfrac{b}{2a},\,-\tfrac{c}{2a}\right),\quad R=\frac{\sqrt{b^2+c^2-4ad}}{2|a|}$$
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--red)">The Residual for Each Point</div>
+      <p>For a noisy point $(x_i,y_i)$ that doesn't lie exactly on the circle, define the <strong>algebraic residual</strong>:</p>
+      <div class="math-box red">$$F_i = a(x_i^2+y_i^2)+bx_i+cy_i+d$$</div>
+      <p>We want $\mathbf{v}$ that makes all $F_i$ small simultaneously — i.e., minimize:</p>
+      <div class="math-box red">$$\min_{\mathbf{v}}\sum_{i=1}^N F_i^2 = \min_{\mathbf{v}}\|M\mathbf{v}\|^2$$</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1rem">
+    <div class="card-title" style="color:var(--green)">The Design Matrix $M$ — What Both Implementations Build</div>
+    <p style="margin-bottom:0.75rem">Stack all residuals into a matrix-vector product. Each row = one point:</p>
+    <div class="math-box green">
+      $$M = \begin{pmatrix}
+        x_1^2+y_1^2 & x_1 & y_1 & 1 \\
+        x_2^2+y_2^2 & x_2 & y_2 & 1 \\
+        \vdots & \vdots & \vdots & \vdots \\
+        x_N^2+y_N^2 & x_N & y_N & 1
+      \end{pmatrix},\qquad
+      M\mathbf{v}=\begin{pmatrix}F_1\\F_2\\\vdots\\F_N\end{pmatrix}$$
+    </div>
+    <div class="callout info">
+      <span class="icon">💡</span>
+      <div>
+        <strong>Both implementations start here.</strong>
+        <p>Impl 1 stores the full $N\times4$ matrix. Impl 2 computes only the $4\times4$ product $M^TM$ directly from dot products — same math, $O(N)$ vs $O(1)$ memory.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 2: TRIVIAL SOLUTION ── -->
+<section id="trivial">
+  <div class="sec-label" style="color:var(--red)">Step 2 — The Core Problem</div>
+  <h2>Why We Can't Just Minimize $\|M\mathbf{v}\|^2$</h2>
+  <p class="lead">The unconstrained minimum is always $\mathbf{v}=\mathbf{0}$. We must pin down the scale of $\mathbf{v}$ with a constraint.</p>
+
+  <div class="callout warn">
+    <span class="icon">⚠️</span>
+    <div>
+      <strong>The Trivial Solution Problem</strong>
+      <p>$\mathbf{v}=[0,0,0,0]^T$ gives $\|M\mathbf{v}\|^2=0$ — a perfect score with zero geometric content. Any optimizer will find this unless we forbid it.</p>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:1.5rem">
+    <div class="card">
+      <div class="card-title" style="color:var(--red)">❌ Option A — Euclidean Norm (Impl 1)</div>
+      <p>The simplest fix: require the parameter vector to have unit length.</p>
+      <div class="math-box red">$$\|\mathbf{v}\|^2 = a^2+b^2+c^2+d^2 = 1$$</div>
+      <p>Easy to enforce — just take the smallest eigenvector of $M^TM$. But it treats $a$, $b$, $c$, $d$ as if they have the same units, which they don't.</p>
+      <div class="callout warn" style="margin-top:0.75rem">
+        <span class="icon">🚨</span>
+        <div><strong>Bias:</strong><p>$a$ scales $r^2$, while $d$ is a constant offset. Mixing them is like adding meters to seconds.</p></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--green)">✅ Option B — Geometric Constraint (Impl 2)</div>
+      <p>Fix a quantity with direct geometric meaning — the discriminant of the circle:</p>
+      <div class="math-box green">$$b^2+c^2-4ad = 1$$</div>
+      <p>This is the <strong>Bookstein constraint</strong>. It controls the circle's shape, not an arbitrary algebraic scale.</p>
+      <div class="callout good" style="margin-top:0.75rem">
+        <span class="icon">✅</span>
+        <div><strong>Scale-invariant:</strong><p>Results don't change if you zoom in or out on your data. Geometrically consistent.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 3: IMPL 1 ── -->
+<section id="impl1">
+  <div class="sec-label" style="color:var(--blue)">Step 3 — Implementation 1</div>
+  <h2>The Euclidean Constraint: A Standard Eigenproblem</h2>
+  <p class="lead">With $\|\mathbf{v}\|^2=1$, the constrained optimization reduces to a familiar symmetric eigenproblem.</p>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--blue)">1</div>
+      <h3>Set Up the Lagrangian</h3>
+      <p>To minimize $\|M\mathbf{v}\|^2$ subject to $\|\mathbf{v}\|^2=1$, introduce a Lagrange multiplier $\lambda$:</p>
+      <div class="math-box blue">
+        $$\mathcal{L}(\mathbf{v},\lambda) = \mathbf{v}^T M^TM\,\mathbf{v} - \lambda\!\left(\mathbf{v}^T\mathbf{v}-1\right)$$
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--blue)">2</div>
+      <h3>Differentiate and Set to Zero</h3>
+      <div class="math-box blue">
+        $$\frac{\partial\mathcal{L}}{\partial\mathbf{v}} = 2M^TM\,\mathbf{v} - 2\lambda\mathbf{v} = 0
+        \;\Longrightarrow\; M^TM\,\mathbf{v} = \lambda\,\mathbf{v}$$
+      </div>
+      <p>This is a <strong>standard symmetric eigenproblem</strong>. The objective value equals $\lambda$, so we pick the <em>smallest eigenvalue</em> → smallest eigenvector.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--blue)">3</div>
+      <h3>Code — Impl 1</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="dot" style="background:#ff5f57"></div>
+          <div class="dot" style="background:#ffbd2e"></div>
+          <div class="dot" style="background:#28c840"></div>
+          <span class="code-fname">impl1_naive.cpp</span>
+        </div>
+        <pre><span class="cm">// Build N×4 design matrix M</span>
+<span class="ty">Eigen</span>::<span class="ty">MatrixXd</span> M = <span class="ty">Eigen</span>::<span class="ty">MatrixXd</span>::<span class="fn">Ones</span>(N, <span class="nm">4</span>);
+M.<span class="fn">col</span>(<span class="nm">0</span>) = x*x + y*y;
+M.<span class="fn">col</span>(<span class="nm">1</span>) = pts.<span class="fn">col</span>(<span class="nm">0</span>);
+M.<span class="fn">col</span>(<span class="nm">2</span>) = pts.<span class="fn">col</span>(<span class="nm">1</span>);
+
+<span class="cm">// ⚠️  Heuristic row-weighting — not the true Taubin method</span>
+<span class="hl-red"><span class="kw">auto</span> w = <span class="nm">2</span> * (x*x + y*y).<span class="fn">sqrt</span>();   <span class="cm">// ≈ gradient norm</span>
+M.<span class="fn">array</span>().<span class="fn">colwise</span>() /= w;          <span class="cm">// divide each row</span></span>
+
+<span class="cm">// Standard symmetric eigenproblem: M^T M v = λ v</span>
+<span class="ty">Eigen</span>::<span class="ty">Matrix4d</span> mTM = M.<span class="fn">transpose</span>() * M;
+<span class="ty">Eigen</span>::<span class="ty">SelfAdjointEigenSolver</span>&lt;<span class="ty">Eigen</span>::<span class="ty">Matrix4d</span>&gt; <span class="fn">solver</span>(mTM);
+
+<span class="cm">// col(0) = smallest eigenvalue (SelfAdjoint sorts ascending)</span>
+<span class="kw">auto</span> v = solver.<span class="fn">eigenvectors</span>().<span class="fn">col</span>(<span class="nm">0</span>);
+
+<span class="cm">// Curvature from recovered parameters</span>
+<span class="kw">auto</span> k = <span class="nm">2</span>*v(<span class="nm">0</span>) / <span class="fn">sqrt</span>(v(<span class="nm">1</span>)*v(<span class="nm">1</span>) + v(<span class="nm">2</span>)*v(<span class="nm">2</span>) - <span class="nm">4</span>*v(<span class="nm">0</span>)*v(<span class="nm">3</span>));</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <span class="icon">⚠️</span>
+    <div>
+      <strong>What's wrong with the weighting?</strong>
+      <p>Dividing rows by $w_i=2r_i$ then solving $\tilde{M}^T\tilde{M}\mathbf{v}=\lambda\mathbf{v}$ is <em>not</em> the Taubin method. The true Taubin formulation requires a separate constraint matrix $C$ — not a row-weighting. This conflation produces biased curvature estimates, especially when points are far from the origin.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 4: BOOKSTEIN ── -->
+<section id="bookstein">
+  <div class="sec-label" style="color:var(--purple)">Step 4 — The Key Insight</div>
+  <h2>Why the Discriminant Is the Right Constraint</h2>
+  <p class="lead">The discriminant $\Delta=b^2+c^2-4ad$ is not arbitrary — it appears directly in the radius formula and controls the circle's geometry.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title" style="color:var(--purple)">Connecting $\Delta$ to Geometry</div>
+      <p>Recall the radius formula:</p>
+      <div class="math-box purple">$$R = \frac{\sqrt{b^2+c^2-4ad}}{2|a|} = \frac{\sqrt{\Delta}}{2|a|}$$</div>
+      <p>And curvature $\kappa=1/R$:</p>
+      <div class="math-box purple">$$\kappa = \frac{2|a|}{\sqrt{\Delta}} = \frac{2|a|}{\sqrt{b^2+c^2-4ad}}$$</div>
+      <p style="margin-top:0.5rem">Setting $\Delta=1$ fixes the <em>geometric scale</em> — not an arbitrary algebraic one.</p>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--purple)">The Constraint Matrix $C$</div>
+      <p>We can write $\Delta=\mathbf{v}^TC\mathbf{v}$ where:</p>
+      <div class="math-box purple">
+        $$C = \begin{pmatrix} 0&0&0&-2\\ 0&1&0&0\\ 0&0&1&0\\ -2&0&0&0 \end{pmatrix}$$
+      </div>
+      <p style="font-size:0.83rem; color:var(--muted)">
+        Verify: $\mathbf{v}^TC\mathbf{v} = b^2+c^2+(-2)(ad+da) = b^2+c^2-4ad = \Delta$ ✓
+      </p>
+      <div class="callout info" style="margin-top:0.75rem">
+        <span class="icon">📝</span>
+        <div><p>Impl 2 uses $C(0,3)=C(3,0)=+2$ — a sign convention difference. Mathematically equivalent.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1rem">
+    <div class="card-title" style="color:var(--orange); margin-bottom:0.75rem">Intuition: Why Does This Fix the Bias?</div>
+    <div class="grid3">
+      <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:1rem">
+        <div style="font-size:0.7rem; color:var(--red); font-weight:800; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.4rem">Euclidean Constraint</div>
+        <p style="font-size:0.83rem; color:var(--muted)">$a^2+b^2+c^2+d^2=1$ treats all parameters equally. But $a$ scales $r^2$ while $d$ is a constant — they live in different spaces. Results change with data scale.</p>
+      </div>
+      <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:1rem">
+        <div style="font-size:0.7rem; color:var(--purple); font-weight:800; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.4rem">Bookstein Constraint</div>
+        <p style="font-size:0.83rem; color:var(--muted)">$b^2+c^2-4ad=1$ only involves combinations that appear in the radius formula. It's a constraint on the <em>circle shape</em>, not the parameter vector scale.</p>
+      </div>
+      <div style="background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:1rem">
+        <div style="font-size:0.7rem; color:var(--green); font-weight:800; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.4rem">Scale Invariance</div>
+        <p style="font-size:0.83rem; color:var(--muted)">If you scale all coordinates by $s$, the Bookstein constraint transforms consistently. Zoom in or out — the fitted curvature stays the same.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 5: IMPL 2 ── -->
+<section id="impl2">
+  <div class="sec-label" style="color:var(--purple)">Step 5 — Implementation 2</div>
+  <h2>The Generalized Eigenproblem: Correct Taubin</h2>
+  <p class="lead">Replacing $I$ with $C$ in the constraint transforms the standard eigenproblem into a generalized one — one mathematical change with profound geometric consequences.</p>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--purple)">1</div>
+      <h3>New Lagrangian with $C$</h3>
+      <div class="math-box purple">
+        $$\mathcal{L}(\mathbf{v},\lambda) = \mathbf{v}^T M^TM\,\mathbf{v} - \lambda\!\left(\mathbf{v}^TC\mathbf{v}-1\right)$$
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--purple)">2</div>
+      <h3>Differentiate → Generalized Eigenproblem</h3>
+      <div class="math-box purple">
+        $$\frac{\partial\mathcal{L}}{\partial\mathbf{v}} = 2M^TM\,\mathbf{v} - 2\lambda C\mathbf{v} = 0
+        \;\Longrightarrow\; \boxed{M^TM\,\mathbf{v} = \lambda\,C\,\mathbf{v}}$$
+      </div>
+      <p>Compare to Impl 1: we simply replaced $I$ with $C$. That single substitution encodes all the geometric meaning.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--purple)">3</div>
+      <h3>Convert to Standard Form via $C^{-1}$</h3>
+      <p>Multiply both sides by $C^{-1}$:</p>
+      <div class="math-box purple">
+        $$C^{-1}M^TM\,\mathbf{v} = \lambda\,\mathbf{v}$$
+      </div>
+      <p>Now it's a standard eigenproblem for $C^{-1}M^TM$. But this matrix is <strong>not symmetric</strong> (even though $M^TM$ is), so we must use a general eigensolver — eigenvalues may be complex.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--purple)">4</div>
+      <h3>Which Eigenvalue to Pick?</h3>
+      <p>Substituting $\mathbf{v}^TC\mathbf{v}=1$ back into the objective:</p>
+      <div class="math-box purple">
+        $$\mathbf{v}^TM^TM\,\mathbf{v} = \lambda\underbrace{\mathbf{v}^TC\mathbf{v}}_{=1} = \lambda$$
+      </div>
+      <p>The objective value <em>equals</em> $\lambda$. To minimize algebraic error: pick the <strong>smallest positive real eigenvalue</strong>. Negative $\lambda$ → imaginary circle (invalid). Complex $\lambda$ → numerical artifact (skip).</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--purple)">5</div>
+      <h3>Code — Impl 2: Generalized Eigenproblem</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="dot" style="background:#ff5f57"></div>
+          <div class="dot" style="background:#ffbd2e"></div>
+          <div class="dot" style="background:#28c840"></div>
+          <span class="code-fname">taubin_curvature.hpp — solve_and_extract_kappa()</span>
+        </div>
+        <pre><span class="cm">// M is the 4×4 moment matrix (= M^T M / N), C is constraint matrix</span>
+<span class="hl"><span class="kw">const</span> <span class="ty">Eigen</span>::<span class="ty">Matrix4d</span> CinvM = C.<span class="fn">inverse</span>() * M;</span>
+<span class="hl"><span class="kw">const</span> <span class="ty">Eigen</span>::<span class="ty">EigenSolver</span>&lt;<span class="ty">Eigen</span>::<span class="ty">Matrix4d</span>&gt; <span class="fn">solver</span>(CinvM); <span class="cm">// general, not SelfAdjoint</span></span>
+
+<span class="kw">const</span> <span class="ty">Eigen</span>::<span class="ty">Vector4cd</span>&amp; evals = solver.<span class="fn">eigenvalues</span>();
+<span class="kw">const</span> <span class="ty">Eigen</span>::<span class="ty">Matrix4cd</span>&amp; evecs = solver.<span class="fn">eigenvectors</span>();
+
+<span class="kw">int</span> best_idx = <span class="nm">-1</span>;
+<span class="kw">double</span> best_val = std::<span class="fn">numeric_limits</span>&lt;<span class="kw">double</span>&gt;::<span class="fn">max</span>();
+
+<span class="kw">for</span> (<span class="kw">int</span> i = <span class="nm">0</span>; i &lt; <span class="nm">4</span>; ++i) {
+<span class="kw">const double</span> re = evals[i].<span class="fn">real</span>();
+<span class="kw">const double</span> im = std::<span class="fn">abs</span>(evals[i].<span class="fn">imag</span>());
+
+<span class="hl-red">  <span class="kw">if</span> (im &gt; <span class="nm">1e-6</span> * std::<span class="fn">abs</span>(re)) <span class="kw">continue</span>; <span class="cm">// skip complex eigenvalues</span></span>
+<span class="hl-red">  <span class="kw">if</span> (disc &lt;= kMinDiscriminant)  <span class="kw">continue</span>; <span class="cm">// skip imaginary circles (Δ ≤ 0)</span></span>
+
+<span class="hl-grn">  <span class="kw">if</span> (std::<span class="fn">abs</span>(re) &lt; best_val) {          <span class="cm">// pick smallest |λ|</span>
+  best_val = std::<span class="fn">abs</span>(re);
+  best_idx = i;
+}</span>
+}</pre>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--purple)">6</div>
+      <h3>Code — Impl 2: Moment Matrix (Memory-Efficient $M^TM$)</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="dot" style="background:#ff5f57"></div>
+          <div class="dot" style="background:#ffbd2e"></div>
+          <div class="dot" style="background:#28c840"></div>
+          <span class="code-fname">taubin_curvature.hpp — build_taubin_matrices()</span>
+        </div>
+        <pre><span class="cm">// z_i = x_i² + y_i²</span>
+<span class="kw">const</span> <span class="ty">Eigen</span>::<span class="ty">VectorXd</span> z = x.<span class="fn">array</span>().<span class="fn">square</span>() + y.<span class="fn">array</span>().<span class="fn">square</span>();
+
+<span class="cm">// Compute 9 scalar moments — never store the N×4 matrix</span>
+<span class="kw">const double</span> Mzz = z.<span class="fn">dot</span>(z) * inv_N;   <span class="cm">// (1/N) Σ z²</span>
+<span class="kw">const double</span> Mxz = x.<span class="fn">dot</span>(z) * inv_N;   <span class="cm">// (1/N) Σ x·z</span>
+<span class="kw">const double</span> Myz = y.<span class="fn">dot</span>(z) * inv_N;
+<span class="kw">const double</span> Mxx = x.<span class="fn">dot</span>(x) * inv_N;
+<span class="kw">const double</span> Myy = y.<span class="fn">dot</span>(y) * inv_N;
+<span class="kw">const double</span> Mxy = x.<span class="fn">dot</span>(y) * inv_N;
+<span class="kw">const double</span> Mzo = z.<span class="fn">mean</span>();
+<span class="kw">const double</span> Mxo = x.<span class="fn">mean</span>();
+<span class="kw">const double</span> Myo = y.<span class="fn">mean</span>();
+
+<span class="hl">M &lt;&lt; Mzz, Mxz, Myz, Mzo,    <span class="cm">// 4×4, identical to M^T M</span>
+   Mxz, Mxx, Mxy, Mxo,
+   Myz, Mxy, Myy, Myo,
+   Mzo, Mxo, Myo, <span class="nm">1.0</span>;</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 6: SAFEGUARDS ── -->
+<section id="safeguards">
+  <div class="sec-label" style="color:var(--green)">Step 6 — Engineering Safeguards</div>
+  <h2>What Makes Impl 2 Production-Ready</h2>
+  <p class="lead">Beyond the math, three critical guards are added that Impl 1 completely lacks. Each prevents a real failure mode.</p>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--blue)">A</div>
+      <h3>Centroid Subtraction — Numerical Stability</h3>
+      <p>Before any computation, subtract the mean of all points:</p>
+      <div class="math-box blue">$$\tilde{x}_i = x_i - \bar{x},\quad \tilde{y}_i = y_i - \bar{y}$$</div>
+      <p><strong>Why?</strong> If your circle is centered at $(1000,1000)$ with radius $4$, then $x_i^2+y_i^2\approx2\times10^6$ while the geometry varies by only $\pm4$. Floating-point arithmetic loses all precision in the subtraction. Centering makes all values small and the computation stable.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="dot" style="background:#ff5f57"></div>
+          <div class="dot" style="background:#ffbd2e"></div>
+          <div class="dot" style="background:#28c840"></div>
+          <span class="code-fname">taubin_curvature.hpp — taubin_curvature()</span>
+        </div>
+        <pre><span class="hl"><span class="kw">const</span> <span class="ty">Eigen</span>::<span class="ty">Vector2d</span> centroid = points.<span class="fn">colwise</span>().<span class="fn">mean</span>();
+<span class="kw">const</span> <span class="ty">Eigen</span>::<span class="ty">MatrixX2d</span> pts_c = points.<span class="fn">rowwise</span>() - centroid.<span class="fn">transpose</span>();</span>
+<span class="cm">// ... all fitting done on pts_c ...</span>
+<span class="cm">// shift circle center back to original frame:</span>
+result.center = center_c + centroid;</pre>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--red)">B</div>
+      <h3>Collinearity Check — Prevent Division by Zero</h3>
+      <p>Before fitting, check if points are nearly on a straight line using the SVD singular value ratio:</p>
+      <div class="math-box red">
+        $$\text{ratio} = \frac{\sigma_2}{\sigma_1} \approx 0 \;\Rightarrow\; \text{points are collinear (straight line)}$$
+      </div>
+      <p>Singular values $\sigma_1,\sigma_2$ measure spread in each direction. A line has spread in only one direction → $\sigma_2\approx0$. Without this guard, fitting a circle to collinear points gives $R\to\infty$, causing $\kappa=1/R\to0$ via division by near-zero — numerically explosive.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="dot" style="background:#ff5f57"></div>
+          <div class="dot" style="background:#ffbd2e"></div>
+          <div class="dot" style="background:#28c840"></div>
+          <span class="code-fname">taubin_curvature.hpp — collinearity_ratio() + early exit</span>
+        </div>
+        <pre><span class="cm">// SVD of centered points</span>
+<span class="kw">const</span> <span class="ty">Eigen</span>::<span class="ty">JacobiSVD</span>&lt;<span class="ty">Eigen</span>::<span class="ty">MatrixX2d</span>&gt; <span class="fn">svd</span>(pts_c, <span class="ty">Eigen</span>::ComputeThinU | <span class="ty">Eigen</span>::ComputeThinV);
+<span class="kw">const double</span> ratio = svd.<span class="fn">singularValues</span>()[<span class="nm">1</span>] / svd.<span class="fn">singularValues</span>()[<span class="nm">0</span>];
+
+<span class="hl-red"><span class="kw">if</span> (ratio &lt; straight_threshold) {   <span class="cm">// nearly collinear</span>
+result.is_straight = <span class="kw">true</span>;
+result.kappa = <span class="nm">0.0</span>;
+result.radius = std::<span class="fn">numeric_limits</span>&lt;<span class="kw">double</span>&gt;::<span class="fn">infinity</span>();
+<span class="kw">return</span> result;                     <span class="cm">// early exit, no eigenproblem</span>
+}</span></pre>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot" style="background:var(--green)">C</div>
+      <h3>Signed Curvature — MPC Needs Direction</h3>
+      <p>Impl 1 always returns positive $\kappa$. For MPC lateral control, the sign tells you <em>which way to steer</em>. Use the <strong>shoelace formula</strong> (signed area of the point polygon):</p>
+      <div class="math-box green">
+        $$A = \sum_{i=0}^{N-2}(x_i y_{i+1} - x_{i+1} y_i)$$
+        $$\text{sign}(\kappa) = \text{sign}(A): \quad A>0\Rightarrow\text{CCW (left turn)},\quad A<0\Rightarrow\text{CW (right turn)}$$
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="dot" style="background:#ff5f57"></div>
+          <div class="dot" style="background:#ffbd2e"></div>
+          <div class="dot" style="background:#28c840"></div>
+          <span class="code-fname">taubin_curvature.hpp — curvature_sign() + application</span>
+        </div>
+        <pre><span class="kw">double</span> signed_area = <span class="nm">0.0</span>;
+<span class="kw">for</span> (<span class="kw">int</span> i = <span class="nm">0</span>; i &lt; N-<span class="nm">1</span>; ++i)
+signed_area += pts(i,<span class="nm">0</span>)*pts(i+<span class="nm">1</span>,<span class="nm">1</span>) - pts(i+<span class="nm">1</span>,<span class="nm">0</span>)*pts(i,<span class="nm">1</span>);
+<span class="kw">const double</span> sign = (signed_area &gt;= <span class="nm">0.0</span>) ? <span class="nm">1.0</span> : <span class="nm">-1.0</span>;
+
+<span class="hl-grn">result.kappa = sign * kappa_abs;  <span class="cm">// signed curvature</span></span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 7: COMPARISON ── -->
+<section id="comparison">
+  <div class="sec-label" style="color:var(--orange)">Step 7 — Full Comparison</div>
+  <h2>Impl 1 vs Impl 2: Every Difference Explained</h2>
+  <p class="lead">Every change in Impl 2 is a direct response to a concrete problem in Impl 1.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Aspect</th>
+          <th>Impl 1 — Naïve</th>
+          <th>Impl 2 — Taubin</th>
+          <th>Why It Matters</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Constraint</strong></td>
+          <td>$\|\mathbf{v}\|^2=1$ (Euclidean)</td>
+          <td>$\mathbf{v}^TC\mathbf{v}=1$ (Bookstein)</td>
+          <td><span class="tag tag-r">Biased</span> → <span class="tag tag-g">Unbiased</span></td>
+        </tr>
+        <tr>
+          <td><strong>Eigenproblem</strong></td>
+          <td>$M^TM\,\mathbf{v}=\lambda\mathbf{v}$</td>
+          <td>$C^{-1}M^TM\,\mathbf{v}=\lambda\mathbf{v}$</td>
+          <td><span class="tag tag-r">Incorrect</span> → <span class="tag tag-g">Correct</span></td>
+        </tr>
+        <tr>
+          <td><strong>Eigensolver</strong></td>
+          <td><code>SelfAdjointEigenSolver</code></td>
+          <td><code>EigenSolver</code> (general)</td>
+          <td><span class="tag tag-b">$C^{-1}M^TM$ not symmetric</span></td>
+        </tr>
+        <tr>
+          <td><strong>Centroid</strong></td>
+          <td>❌ None</td>
+          <td>✅ Subtract before fit</td>
+          <td><span class="tag tag-g">Numerical stability</span></td>
+        </tr>
+        <tr>
+          <td><strong>Collinearity</strong></td>
+          <td>❌ None</td>
+          <td>✅ SVD ratio test</td>
+          <td><span class="tag tag-g">No div-by-zero</span></td>
+        </tr>
+        <tr>
+          <td><strong>Sign of $\kappa$</strong></td>
+          <td>❌ Always positive</td>
+          <td>✅ Shoelace formula</td>
+          <td><span class="tag tag-g">MPC steering direction</span></td>
+        </tr>
+        <tr>
+          <td><strong>Memory</strong></td>
+          <td>$O(N\times4)$ matrix</td>
+          <td>$O(4\times4)$ moments only</td>
+          <td><span class="tag tag-g">Efficient for large $N$</span></td>
+        </tr>
+        <tr>
+          <td><strong>Residual</strong></td>
+          <td>❌ None</td>
+          <td>✅ Sampson distance RMS</td>
+          <td><span class="tag tag-g">Fit quality metric</span></td>
+        </tr>
+        <tr>
+          <td><strong>Input validation</strong></td>
+          <td>❌ None</td>
+          <td>✅ Throws on $N<3$ or wrong shape</td>
+          <td><span class="tag tag-g">Safe API</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout good" style="margin-top:2rem">
+    <span class="icon">🎯</span>
+    <div>
+      <strong>The Core Insight in One Sentence</strong>
+      <p>Impl 1 uses the right objective ($\|M\mathbf{v}\|^2$) but the wrong constraint ($\|\mathbf{v}\|=1$). Impl 2 replaces the constraint with one that has direct geometric meaning ($\mathbf{v}^TC\mathbf{v}=1$), which changes a plain eigenproblem into a generalized one — and adds all the engineering guards needed for a production autonomous driving system.</p>
+    </div>
+  </div>
+</section>
+
+</div><!-- /page -->
+
+<footer>
+  <p style="margin-bottom:0.4rem">
+    Taubin, G. (1991). <em>Estimation of Planar Curves, Surfaces, and Nonplanar Space Curves Defined by Implicit Equations.</em> IEEE Trans. Pattern Anal. Mach. Intell.
+  </p>
+  <p>Implemented in <code>autoware::motion::control::mpc_lateral_controller</code> · Apache 2.0 License</p>
+</footer>
+
+</body>
+</html>
